@@ -21,17 +21,15 @@ public class UserMgr {
         /**
          * Registers a new user into the UserRecords
          */
-        utils.println("Please enter a username: ");
-        utils.nextLine();
-        String username = utils.nextLine();
+
+        String username = utils.UserInputString("Please enter a username: ");
 
         while (UserRecords.containsKey(username)){
-            utils.println("The username entered already exists. \nPlease enter another username.");
-            username = utils.nextLine();
+            utils.println("The username entered already exists.");
+            username = utils.UserInputString("Please enter another username: ");
         }
 
-        utils.println("Please enter a password: ");
-        String password = utils.nextLine();
+        String password = utils.UserInputString("Please enter a password: ");
         User newUser = new User(username, password);
         UserRecords.put(username, newUser);
 
@@ -43,16 +41,13 @@ public class UserMgr {
          * Logs in the user.
          * Returns the User object for the other classes to use
          */
-        utils.println("LOGIN PAGE \n______________\nusername: ");
-        utils.nextLine();
-        String username = utils.nextLine();
+        String username = utils.UserInputString("LOGIN PAGE \n______________\nusername: ");
 
         if (!UserRecords.containsKey(username)){
             utils.println("The username entered does not exists.");
             return null;
         }
-        utils.println("password: ");
-        String password = utils.nextLine();
+        String password = utils.UserInputString("password: ");
         int attempts = 3;
         while (!password.equals(UserRecords.get(username).password) && attempts > 0){
             utils.println("The password entered is incorrect. \nAttempts left: " + attempts + "\npassword: ");

@@ -46,6 +46,12 @@ public class TerminalUtils implements Utils {
         return i;
     }
 
+    public String UserInputString(String prompt) {
+        System.out.println(prompt);
+        String s = nextLine();
+        return s;
+    }
+
     public String getBookingID(){
         String prompt = "Please enter your booking ID String: ";
         System.out.println(prompt);
