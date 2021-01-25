@@ -32,6 +32,9 @@ public class TerminalUtils implements Utils {
     }
 
     public int UserInputOptions(int start, int stop,String prompt,String reprompt) {
+        /**
+         * Don't know how is it different from the above function but okay.....
+         */
         int i;
         int tries = 1;
         String p;
