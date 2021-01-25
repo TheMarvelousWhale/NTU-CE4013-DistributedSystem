@@ -67,7 +67,7 @@ public class Facility {
 
     public void queryAvailability(Utils utils) {
         /**
-         * Print the availability of each facility
+         * Print the availability of each facility of retohvhvvghgv
          */
         char[] days = {'M', 'T', 'W', 'T', 'F', 'S', 'S'};
         utils.println("   |  0000|  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
