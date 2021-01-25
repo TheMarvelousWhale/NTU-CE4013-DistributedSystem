@@ -19,12 +19,8 @@ public class BDSMclient {
             Utils utils = new SocketUtils(socket);                  //comm to server
             Scanner sc = new Scanner(System.in);                    //comm to user
 
-            String s = "Welcome to the system. Type a name that we can call you: ";     //welcome to user
-            System.out.println(s);
-            String userID = sc.nextLine();
 
-            //send the user name to the server
-            utils.println(userID);
+
             boolean session_alive = true;
             while (session_alive) {
 
