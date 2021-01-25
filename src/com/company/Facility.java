@@ -191,4 +191,75 @@ public class Facility {
                 utils.println("Another user has booked this facility on date: "+b.date.toString()+", from "+b.startTime+" to "+b.endTime);
         }
     }
+
+    public void cancelBooking(String bookingID, Utils utils) {
+        /**
+         * Allows user to cancel booking given a valid booking ID
+         */
+        //verify there is such a booking
+        if (this.Record.containsKey(bookingID) == false) {
+            utils.println("No such booking here.");
+        } else {
+            //get the details of the old Booking
+            Booking b = this.Record.get(bookingID);
+            DayOfWeek Date = b.date;
+            int StartTime = b.startTime;
+            int EndTime = b.endTime;
+
+            //print details of old booking
+            utils.println("Your booking on: " + b.date + ", from " + b.startTime + "h to " + b.endTime + "h, will be cancelled.");
+
+            //clear on the Availability & Record, booking ID will become invalid.
+            this.clearAvailability(Date, StartTime, EndTime);
+            this.Record.clear();
+        }
+    }
+
+    public void extendBooking(String bookingID, Utils utils) {
+        /**
+         * Allows user to extend his current booking given a valid booking ID
+         */
+        // verify there is such a booking
+        if (this.Record.containsKey(bookingID) == false){
+            utils.println("No such booking here.");
+        } else {
+            //get the details of the old Booking
+            Booking b = this.Record.get(bookingID);
+            DayOfWeek Date = b.date;
+            int StartTime = b.startTime;
+            int EndTime = b.endTime;
+
+            //clear the current booking to prevent clashing with itself
+            this.clearAvailability(Date,StartTime,EndTime);
+
+            //set to false if new booking successful, else rebook old booking
+            boolean rebook = true;
+
+            //Allow up to 3hrs of extension at once
+            utils.println("How many slots do you want to extend your booking by (only up to 3hrs)?");
+            int offset = utils.checkUserIntInput(1,3);
+
+            //Ensures that it does not go to the next day
+            if (EndTime+offset > 23) {
+                utils.println("Such change cannot be made as it exceeds the day boundary...Return to Main Page");
+            }
+            //Ensures that it does not clash with existing bookings
+            else if (this.checkForClash(Date,StartTime,EndTime+offset)) {
+                utils.println("There is a clash with another booking");
+            }
+            //No clash, update the Availability, Record & lastModified. Show user booking is updated
+            else {
+                this.setAvailability(Date, StartTime, EndTime+offset);
+                b.endTime = EndTime+offset;
+                this.lastModified = System.currentTimeMillis();
+                rebook = false;
+                utils.println("Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+            }
+            //If new booking fails, rebook the original timeslot. Show user booking is same.
+            if (rebook){
+                this.setAvailability(Date, StartTime, EndTime);
+                utils.println("No changes made to your booking on " + b.date + ", Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+            }
+        }
+    }
 }
