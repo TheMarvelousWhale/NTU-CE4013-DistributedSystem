@@ -90,9 +90,10 @@ public class Facility {
 
     }
 
-    public void book(String username, Utils utils){
+    public int book(String username, int bookingPoints, Utils utils){
         /**
          * Front end to print the facility to the user
+         * Returns the points used for booking the facility
          */
 
         utils.println("For the day (1: Monday, 2: Tuesday, 3: Wednesday, 4: Thursday, 5: Friday, 6: Saturday, 7: Sunday): ");
@@ -102,18 +103,31 @@ public class Facility {
         int startTime = utils.checkUserIntInput(0,23);
         utils.println("For the end time: ");
         int endTime = utils.checkUserIntInput(0,23);
+
+        int pointsRequired = endTime - startTime + 1;
+
         if (this.checkForClash(date,startTime,endTime)) {
             utils.println("There is a clash with another booking");
+        }
+        else if (bookingPoints < pointsRequired){
+            utils.println("User " + username + " does not have enough booking points.\n" + "Available points: "
+                    + bookingPoints + "    Points Required: " + pointsRequired);
         }
         else {
             this.setAvailability(date, startTime, endTime);
             String bookingID = UUID.randomUUID().toString();
             this.Record.put(bookingID, new Booking(bookingID, date, startTime, endTime,username));
+
             queryAvailability(utils);
-            utils.println("Your booking is successful. Booking ID is "+bookingID);
+            utils.println("Your booking is successful. Booking ID is "+bookingID + "\nPoints Remaining: "
+                    + (bookingPoints - pointsRequired));
             //set last Modified
             this.lastModified = System.currentTimeMillis();
+
+            return pointsRequired;
         }
+
+        return 0;
     }
 
 
@@ -192,12 +206,12 @@ public class Facility {
         }
     }
 
-    public void cancelBooking(String bookingID, Utils utils) {
+    public int cancelBooking(String bookingID, Utils utils) {
         /**
          * Allows user to cancel booking given a valid booking ID
          */
         //verify there is such a booking
-        if (this.Record.containsKey(bookingID) == false) {
+        if (!this.Record.containsKey(bookingID)) {
             utils.println("No such booking here.");
         } else {
             //get the details of the old Booking
@@ -212,7 +226,9 @@ public class Facility {
             //clear on the Availability & Record, booking ID will become invalid.
             this.clearAvailability(Date, StartTime, EndTime);
             this.Record.clear();
+            return EndTime - StartTime + 1;
         }
+        return 0;
     }
 
     public void extendBooking(String bookingID, Utils utils) {
