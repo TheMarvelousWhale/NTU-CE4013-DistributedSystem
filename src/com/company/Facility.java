@@ -225,7 +225,7 @@ public class Facility {
 
             //clear on the Availability & Record, booking ID will become invalid.
             this.clearAvailability(Date, StartTime, EndTime);
-            this.Record.clear();
+            this.Record.remove(bookingID);
             return EndTime - StartTime + 1;
         }
         return 0;
