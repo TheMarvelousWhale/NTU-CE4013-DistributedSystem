@@ -95,7 +95,8 @@ public class SocketUtils implements Utils {
 
     public String getBookingID(){
         String prompt = "Please enter your booking ID String: ";
-        System.out.println(prompt);
+        writer.println(prompt);
+        writer.println(RRA.ACK);
         String ans = nextLine();
         return ans;
     }

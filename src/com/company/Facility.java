@@ -57,6 +57,8 @@ public class Facility {
         return this.lastModified;
     }
 
+    private void updateLastModified() {this.lastModified = System.currentTimeMillis();}
+
     private boolean checkForClash(DayOfWeek date,int startTime, int endTime){
         for(int i= startTime; i<=endTime;i++) {
             if (this.availability[date.getValue()-1][i] == 1)
@@ -122,7 +124,7 @@ public class Facility {
             utils.println("Your booking is successful. Booking ID is "+bookingID + "\nPoints Remaining: "
                     + (bookingPoints - pointsRequired));
             //set last Modified
-            this.lastModified = System.currentTimeMillis();
+            updateLastModified();
 
             return pointsRequired;
         }
@@ -183,11 +185,13 @@ public class Facility {
                 rebook = false;
 
                 //set last Modified
-                this.lastModified = System.currentTimeMillis();
+                updateLastModified();
+                utils.println("Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h");
             }
 
             if (rebook)
                 this.setAvailability(oldDate,oldStartTime,oldEndTime);
+                utils.println("Your booking "+ bookingID+ " was not modified");
         }
     }
 
@@ -226,6 +230,7 @@ public class Facility {
             //clear on the Availability & Record, booking ID will become invalid.
             this.clearAvailability(Date, StartTime, EndTime);
             this.Record.remove(bookingID);
+            updateLastModified();
             return EndTime - StartTime + 1;
         }
         return 0;
@@ -267,7 +272,7 @@ public class Facility {
             else {
                 this.setAvailability(Date, StartTime, EndTime+offset);
                 b.endTime = EndTime+offset;
-                this.lastModified = System.currentTimeMillis();
+                updateLastModified();
                 rebook = false;
                 utils.println("Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h");
             }
