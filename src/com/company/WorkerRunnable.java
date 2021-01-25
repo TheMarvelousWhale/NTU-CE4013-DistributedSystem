@@ -25,6 +25,8 @@ public class WorkerRunnable implements Runnable {
 
         FacilityMgr Neki = FacilityMgr.getInstance();
 
+        UserMgr Viet = UserMgr.getInstance();  //Added this new user manager
+
 
         Utils utils = null;
         try {
@@ -33,8 +35,31 @@ public class WorkerRunnable implements Runnable {
             e.printStackTrace();
         }
 
-        String userID = utils.nextLine();
-        String welcome_msg = String.format("Welcome User %s to MOLIBMA 2.0", userID);
+        /**
+         * User will now log in instead of typing their preferred name
+         *
+         * And the user object will be the one calling the facility methods
+         * User books -> Facility
+         * User queries -> Facility     etc....
+         */
+        User loggedInUser = null;
+
+        while (loggedInUser == null) {
+            int option = utils.UserInputOptions(1, 2, "Welcome! Please select an option: \n1. Register" +
+                    " \n2. Login", "Invalid option! \nPlease choose a valid option: ");
+            switch (option) {
+                case 1:
+                    Viet.Register(utils);
+                    break;
+                case 2:
+                    loggedInUser = Viet.Login(utils);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        String welcome_msg = String.format("Welcome User %s to MOLIBMA 2.0", loggedInUser.username);
 
         while (true) {
 
@@ -57,10 +82,10 @@ public class WorkerRunnable implements Runnable {
 
             switch (choice) {
                 case 1:
-                    f.queryAvailability(utils);
+                    loggedInUser.queryFacilityAvailability(utils, f);
                     break;
                 case 2:
-                    f.book(userID,utils);
+                    loggedInUser.bookFacility(utils, f);
                     thisThreadLastModified = System.currentTimeMillis();
                     break;
                 case 3:
@@ -72,7 +97,7 @@ public class WorkerRunnable implements Runnable {
                     monitorFacility(f,utils);
                     break;
                 case 5:
-                    f.showRecords(userID, utils);
+                    loggedInUser.getBookingRecords(utils, f);
                     break;
 
             }

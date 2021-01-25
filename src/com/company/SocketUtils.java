@@ -84,12 +84,23 @@ public class SocketUtils implements Utils {
         } while (i> stop || i < start);
         return i;
     }
+
+    public String UserInputString(String prompt){
+        String s;
+        writer.println(prompt);
+        writer.println(RRA.ACK);
+        s = nextLine();
+        return s;
+    }
+
     public String getBookingID(){
         String prompt = "Please enter your booking ID String: ";
-        System.out.println(prompt);
+        writer.println(prompt);
+        writer.println(RRA.ACK);
         String ans = nextLine();
         return ans;
     }
+
     public void println(String s) {
         writer.println(s);
     }

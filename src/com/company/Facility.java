@@ -57,6 +57,8 @@ public class Facility {
         return this.lastModified;
     }
 
+    private void updateLastModified() {this.lastModified = System.currentTimeMillis();}
+
     private boolean checkForClash(DayOfWeek date,int startTime, int endTime){
         for(int i= startTime; i<=endTime;i++) {
             if (this.availability[date.getValue()-1][i] == 1)
@@ -70,8 +72,8 @@ public class Facility {
          * Print the availability of each facility
          */
         char[] days = {'M', 'T', 'W', 'T', 'F', 'S', 'S'};
-        utils.println("   |  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
-                " 1100|  1200|  1300|  1400|  1500|  1600|  1700|  1800|  1900|  2000|  2100|  2200|  2300|  2400|");
+        utils.println("   |  0000|  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
+                " 1100|  1200|  1300|  1400|  1500|  1600|  1700|  1800|  1900|  2000|  2100|  2200|  2300|");
         utils.println("--------------------------------------------------------------------------------------" +
                 "--------------------------------------------------------------------------------------");
         for(int i = 0; i<7; i++){
@@ -90,9 +92,10 @@ public class Facility {
 
     }
 
-    public void book(String username, Utils utils){
+    public int book(String username, int bookingPoints, Utils utils){
         /**
          * Front end to print the facility to the user
+         * Returns the points used for booking the facility
          */
 
         utils.println("For the day (1: Monday, 2: Tuesday, 3: Wednesday, 4: Thursday, 5: Friday, 6: Saturday, 7: Sunday): ");
@@ -102,18 +105,31 @@ public class Facility {
         int startTime = utils.checkUserIntInput(0,23);
         utils.println("For the end time: ");
         int endTime = utils.checkUserIntInput(0,23);
+
+        int pointsRequired = endTime - startTime + 1;
+
         if (this.checkForClash(date,startTime,endTime)) {
             utils.println("There is a clash with another booking");
+        }
+        else if (bookingPoints < pointsRequired){
+            utils.println("User " + username + " does not have enough booking points.\n" + "Available points: "
+                    + bookingPoints + "    Points Required: " + pointsRequired);
         }
         else {
             this.setAvailability(date, startTime, endTime);
             String bookingID = UUID.randomUUID().toString();
             this.Record.put(bookingID, new Booking(bookingID, date, startTime, endTime,username));
+
             queryAvailability(utils);
-            utils.println("Your booking is successful. Booking ID is "+bookingID);
+            utils.println("Your booking is successful. Booking ID is "+bookingID + "\nPoints Remaining: "
+                    + (bookingPoints - pointsRequired));
             //set last Modified
-            this.lastModified = System.currentTimeMillis();
+            updateLastModified();
+
+            return pointsRequired;
         }
+
+        return 0;
     }
 
 
@@ -169,11 +185,13 @@ public class Facility {
                 rebook = false;
 
                 //set last Modified
-                this.lastModified = System.currentTimeMillis();
+                updateLastModified();
+                utils.println("Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h");
             }
 
             if (rebook)
                 this.setAvailability(oldDate,oldStartTime,oldEndTime);
+                utils.println("Your booking "+ bookingID+ " was not modified");
         }
     }
 
@@ -189,6 +207,80 @@ public class Facility {
                 utils.println("Booking ID:" + i + ", date: "+b.date.toString()+", from "+b.startTime+" to "+b.endTime);
             else
                 utils.println("Another user has booked this facility on date: "+b.date.toString()+", from "+b.startTime+" to "+b.endTime);
+        }
+    }
+
+    public int cancelBooking(String bookingID, Utils utils) {
+        /**
+         * Allows user to cancel booking given a valid booking ID
+         */
+        //verify there is such a booking
+        if (!this.Record.containsKey(bookingID)) {
+            utils.println("No such booking here.");
+        } else {
+            //get the details of the old Booking
+            Booking b = this.Record.get(bookingID);
+            DayOfWeek Date = b.date;
+            int StartTime = b.startTime;
+            int EndTime = b.endTime;
+
+            //print details of old booking
+            utils.println("Your booking on: " + b.date + ", from " + b.startTime + "h to " + b.endTime + "h, will be cancelled.");
+
+            //clear on the Availability & Record, booking ID will become invalid.
+            this.clearAvailability(Date, StartTime, EndTime);
+            this.Record.remove(bookingID);
+            updateLastModified();
+            return EndTime - StartTime + 1;
+        }
+        return 0;
+    }
+
+    public void extendBooking(String bookingID, Utils utils) {
+        /**
+         * Allows user to extend his current booking given a valid booking ID
+         */
+        // verify there is such a booking
+        if (this.Record.containsKey(bookingID) == false){
+            utils.println("No such booking here.");
+        } else {
+            //get the details of the old Booking
+            Booking b = this.Record.get(bookingID);
+            DayOfWeek Date = b.date;
+            int StartTime = b.startTime;
+            int EndTime = b.endTime;
+
+            //clear the current booking to prevent clashing with itself
+            this.clearAvailability(Date,StartTime,EndTime);
+
+            //set to false if new booking successful, else rebook old booking
+            boolean rebook = true;
+
+            //Allow up to 3hrs of extension at once
+            utils.println("How many slots do you want to extend your booking by (only up to 3hrs)?");
+            int offset = utils.checkUserIntInput(1,3);
+
+            //Ensures that it does not go to the next day
+            if (EndTime+offset > 23) {
+                utils.println("Such change cannot be made as it exceeds the day boundary...Return to Main Page");
+            }
+            //Ensures that it does not clash with existing bookings
+            else if (this.checkForClash(Date,StartTime,EndTime+offset)) {
+                utils.println("There is a clash with another booking");
+            }
+            //No clash, update the Availability, Record & lastModified. Show user booking is updated
+            else {
+                this.setAvailability(Date, StartTime, EndTime+offset);
+                b.endTime = EndTime+offset;
+                updateLastModified();
+                rebook = false;
+                utils.println("Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+            }
+            //If new booking fails, rebook the original timeslot. Show user booking is same.
+            if (rebook){
+                this.setAvailability(Date, StartTime, EndTime);
+                utils.println("No changes made to your booking on " + b.date + ", Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+            }
         }
     }
 }
