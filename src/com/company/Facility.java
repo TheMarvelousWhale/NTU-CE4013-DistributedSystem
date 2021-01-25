@@ -136,7 +136,7 @@ public class Facility {
 
     public void changeBooking(String bookingID,Utils utils) {
         /**
-         * Change the booking given an ID
+         * Change the booking given an ID hihi
          */
 
         //verify there is such a booking
