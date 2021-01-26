@@ -8,6 +8,10 @@ public class UserMgr {
 
     private UserMgr(){
         this.UserRecords = new HashMap<String, User>();
+
+        //default account
+        this.UserRecords.put("admin",new User("admin","admin"));
+        this.UserRecords.get("admin").bookingPoints=1000;
         }
 
 

@@ -13,10 +13,18 @@ public class WorkerRunnable implements Runnable {
     protected Socket clientSocket = null;
     public static int numThreads = 0;
     public long thisThreadLastModified;
+    private Utils u;
+
 
     public WorkerRunnable(Socket clientSocket) {
         this.clientSocket = clientSocket;
         numThreads++;
+        this.u = null;
+        try {
+            this.u = new SocketUtils(clientSocket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run() {
@@ -28,13 +36,8 @@ public class WorkerRunnable implements Runnable {
         UserMgr Viet = UserMgr.getInstance();  //Added this new user manager
 
 
-        Utils utils = null;
-        try {
-            utils = new SocketUtils(clientSocket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
+        Utils utils = this.u;
         /**
          * User will now log in instead of typing their preferred name
          *
@@ -94,7 +97,19 @@ public class WorkerRunnable implements Runnable {
                     thisThreadLastModified = System.currentTimeMillis();
                     break;
                 case 4:
-                    monitorFacility(f,utils);
+                    f.register(this);
+                    int dur = utils.UserInputOptions(1, 1000,
+                            "Enter the duration (in hours) to monitor from (1-1000) inclusive",
+                            "Please reenter the duration (1-1000) inclusive: ");
+                    utils.println("Start monitoring: ");
+                    try {
+                        Thread.sleep(dur * 1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }   finally {
+                        utils.println("Stopping monitor");
+                        f.deregister(this);
+                    }
                     break;
                 case 5:
                     loggedInUser.getBookingRecords(utils, f);
@@ -110,53 +125,12 @@ public class WorkerRunnable implements Runnable {
         System.out.println("[Thread "+id+"]: Finished it job.");
 
     }
-    private void monitorFacility(Facility f, Utils utils) {
-        int dur = utils.UserInputOptions(1, 100,
-                "Enter the duration (in hours) to monitor from (1-100) inclusive",
-                "Please reenter the duration (1-100) inclusive: ");
-        long wakeTime = System.currentTimeMillis() + dur*1000; //  do this for ${dur}  seconds
-        Runnable listener = new Runnable() {
-            @Override
-            public void run() {
-                //every polling duration, get the lastModified of that facility
-                do {
-                    long serverlastModified = f.getLastModified();
-
-                    //changes were made by this thread, do nothing
-                    if (thisThreadLastModified + POLLING_DURATION > serverlastModified) ;
-
-                        // if some changes were made by other clients
-                        // get latest changes via query, then change last modified
-                    else {
-                        long l = f.getLastModified();
-                        String noti = String.format("=====  %s AT %02d:%02d  =====",f.name.toUpperCase(), (l/36000/1000)%24,(l/1000/60)%60);
-                        utils.println(noti);
-                        f.queryAvailability(utils);
-                        thisThreadLastModified = l;
-                    }
-
-                    //then go sleep for polling duration (10s)
-                    try {
-                        Thread.sleep(POLLING_DURATION * 1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } while(System.currentTimeMillis() < wakeTime);
-            }
-        };
-        new Thread(listener).start();
-
-        //Make it synchronous because i dont like to fk up the input output stream
-        try {
-            Thread.sleep(dur * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }   finally {
-            utils.println("Stopping monitor");
-        }
-
-
-        //this function will piggy back on the menu ACK so we don't send any ACK here
+    public void monitorFacility(Facility f) {
+        Utils utils = this.u;
+        long l = f.lastModified;
+        String noti = String.format("=====  %s AT %02d:%02d  =====",f.name.toUpperCase(), (l/36000/1000)%24,(l/1000/60)%60);
+        utils.println(noti);
+        f.queryAvailability(utils);
 
     }
 

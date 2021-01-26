@@ -15,6 +15,7 @@ public class Facility {
     HashMap<String, Booking> Record;
     int ID;
     long lastModified;
+    HashMap<WorkerRunnable,String> subscribers;
 
     public Facility(String name,int ID) {
         /**
@@ -28,6 +29,7 @@ public class Facility {
         this.availability = new int[7][24];
         this.Record = new HashMap<String, Booking>();
         this.lastModified = System.currentTimeMillis();
+        this.subscribers = new HashMap<WorkerRunnable,String>();
     }
 
 
@@ -57,7 +59,23 @@ public class Facility {
         return this.lastModified;
     }
 
-    private void updateLastModified() {this.lastModified = System.currentTimeMillis();}
+    private void updateLastModified() {
+        this.lastModified = System.currentTimeMillis();
+        for (WorkerRunnable w: this.subscribers.keySet()){
+            w.monitorFacility(this);
+        }
+    }
+
+    public void register(WorkerRunnable w){
+        if (this.subscribers.containsKey(w));
+        else
+            this.subscribers.put(w,"");
+    }
+    public void deregister(WorkerRunnable w) {
+        this.subscribers.remove(w);
+    }
+
+
 
     private boolean checkForClash(DayOfWeek date,int startTime, int endTime){
         for(int i= startTime; i<=endTime;i++) {
