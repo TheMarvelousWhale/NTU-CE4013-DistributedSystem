@@ -9,6 +9,7 @@ public class TerminalUtils implements Utils {
     public static Scanner s = new Scanner(System.in);
 
     public String nextLine(){
+        s.nextLine();
         String sc = s.nextLine();
         return sc;
     }
@@ -45,14 +46,15 @@ public class TerminalUtils implements Utils {
                 p = reprompt;
             System.out.println(p);
             i = s.nextInt();
+            s.nextLine();
         } while (i> stop || i < start);
         return i;
     }
 
     public String UserInputString(String prompt) {
         System.out.println(prompt);
-        String s = nextLine();
-        return s;
+        String str = TerminalUtils.s.nextLine();
+        return str;
     }
 
     public String getBookingID(){
