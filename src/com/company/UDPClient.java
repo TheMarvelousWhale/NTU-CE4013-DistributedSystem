@@ -20,7 +20,7 @@ public class UDPClient {
     public String sendMessage(String message) throws IOException {
         // Send the message
         byte[] tx_buf;
-        byte[] rx_buf = new byte[1024];
+        byte[] rx_buf = new byte[2048];
         tx_buf = message.getBytes();
         DatagramPacket txPacket = new DatagramPacket(tx_buf,tx_buf.length,IPAdress,this.port);
         this.clientSocket.send(txPacket);

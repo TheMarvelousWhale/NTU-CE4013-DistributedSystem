@@ -30,7 +30,7 @@ public class User {
         /**
          * Users can query the availability of a Facility
          */
-        facility.queryAvailability(utils);
+        facility.queryAvailability();
     }
 
     public void getBookingRecords(Utils utils, Facility facility){

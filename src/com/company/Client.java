@@ -3,6 +3,7 @@ package com.company;
 
 public class Client {
 
+
     public static void main(String[] args) throws Exception {
         UDPClient UDP_Sender = new UDPClient("localhost", 9000);
         Utils utils = new TerminalUtils();
@@ -10,6 +11,7 @@ public class Client {
         ClientFacilityMgr facilityMgr = ClientFacilityMgr.getInstance(UDP_Sender);
 
         String loggedInUser = null;
+
 
         while (loggedInUser == null) {
             int option = utils.UserInputOptions(1, 2, "Welcome! Please select an option: \n1. Register" +
@@ -25,13 +27,56 @@ public class Client {
                     break;
             }
         }
+        String[] facilities;
+        facilities = facilityMgr.getFacilities(utils);
+        facilities[facilities.length-1] = "Logout";
+        int choice = 0;
+        String selectedFacility;
 
-        String[] facilities = facilityMgr.getFacilities(utils);
-        int num = 1;
-        for (String facility: facilities){
-            utils.println(num + ". " + facility);
-            num++;
+        String[] facilityOptions = {"Main Menu:",
+                "\t1. Query this facility",
+                "\t2. Book this facility",
+                "\t3. Change a booking",
+                "\t4. Monitor this facility",
+                "\t5. Show current booking",
+                "\t6. TBC 2"
+        };
+
+        while(true){
+            int num = 1;
+            for (String facility: facilities){
+                utils.println(num + ". " + facility);
+                num++;
+            }
+
+            choice = utils.UserInputOptions(1, facilities.length, "Please select a facility: ",
+                    "Invalid choice, please try again: ");
+
+            if (choice >= facilities.length)
+                break;
+
+            selectedFacility = facilities[choice-1];
+
+
+            for (String opt : facilityOptions) {
+                utils.println(opt);
+            }
+
+            choice = utils.UserInputOptions(1, facilityOptions.length, "Please select an option: ",
+                    "Invalid choice, please try again: ");
+            switch (choice){
+                case 1:
+                    facilityMgr.queryFacility(utils, selectedFacility);
+                    break;
+
+                default:
+                    break;
+            }
+
         }
 
+
     }
+
+
 }

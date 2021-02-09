@@ -43,6 +43,7 @@ public class TerminalUtils implements Utils {
                 p = prompt;
             else
                 p = reprompt;
+            tries++;
             System.out.println(p);
             i = s.nextInt();
             s.nextLine();

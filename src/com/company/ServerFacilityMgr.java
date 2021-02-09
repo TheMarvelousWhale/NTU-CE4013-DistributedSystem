@@ -74,11 +74,14 @@ public class ServerFacilityMgr implements ServiceMgr{
                     sender.sendFailureMessage();
                 break;
 
+            case "queryFacility":       //queryFacility/$facility
+                sender.sendMessage(this.FacilityRecords.get(requestSequence[2]).queryAvailability());
+                break;
 //            case "updateObject":
 
 
             default:
-                sender.sendFailureMessage();
+                sender.sendMessage("MEOW");
                 break;
         }
     }

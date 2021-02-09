@@ -67,29 +67,30 @@ public class Facility {
         return false;
     }
 
-    public void queryAvailability(Utils utils) {
+    public String queryAvailability() {
         /**
          * Print the availability of each facility
          */
+        String timeTable = "";
         char[] days = {'M', 'T', 'W', 'T', 'F', 'S', 'S'};
-        utils.println("   |  0000|  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
-                " 1100|  1200|  1300|  1400|  1500|  1600|  1700|  1800|  1900|  2000|  2100|  2200|  2300|");
-        utils.println("--------------------------------------------------------------------------------------" +
-                "--------------------------------------------------------------------------------------");
+        timeTable+="   |  0000|  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
+                " 1100|  1200|  1300|  1400|  1500|  1600|  1700|  1800|  1900|  2000|  2100|  2200|  2300|\n";
+        timeTable+="--------------------------------------------------------------------------------------" +
+                "--------------------------------------------------------------------------------------\n";
         for(int i = 0; i<7; i++){
-            utils.print(days[i] + "  | ");
+           timeTable += days[i] + "  | ";
             for(int j = 0; j<24; j++){
                 if (checkAvailability(i, j)) {
-                    utils.print("  O  | ");
+                    timeTable += "  O  | ";
                 }
-                else utils.print("  X  | ");
+                else timeTable += "  X  | ";
             }
-            utils.print("\n");
+            timeTable += "\n";
         }
 
-        utils.print("\n");
-        utils.println("O = Available \nX = Booked \n");
-
+        timeTable += "\n";
+        timeTable += "O = Available \nX = Booked \n\n";
+        return  timeTable;
     }
 
     public int book(String username, int bookingPoints, Utils utils){
@@ -120,7 +121,7 @@ public class Facility {
             String bookingID = UUID.randomUUID().toString();
             this.Record.put(bookingID, new Booking(bookingID, date, startTime, endTime,username));
 
-            queryAvailability(utils);
+            queryAvailability();
             utils.println("Your booking is successful. Booking ID is "+bookingID + "\nPoints Remaining: "
                     + (bookingPoints - pointsRequired));
             //set last Modified

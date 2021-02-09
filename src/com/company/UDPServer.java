@@ -23,7 +23,7 @@ public class UDPServer {
          * Receives requests from clients
          * And updates the returnAddress to the previously received packet
          */
-        byte[] rx_buf = new byte[1024];
+        byte[] rx_buf = new byte[2048];
         DatagramPacket rxPacket = new DatagramPacket(rx_buf, rx_buf.length);
         try {
             serverSocket.receive(rxPacket);
