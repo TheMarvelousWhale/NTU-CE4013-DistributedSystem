@@ -4,6 +4,7 @@ import java.io.IOException;
 
 public class ClientUserMgr {
     private static ClientUserMgr single_instance = null;
+    private static final String SERVICENAME = "UserService/";
 
     private ClientUserMgr(){
 
@@ -21,26 +22,27 @@ public class ClientUserMgr {
          * Registers a new user into the UserRecords
          * Sends username to Server
          */
-
+        String message = SERVICENAME + "checkObject/";
         String username = utils.UserInputString("Please enter a username: ");
         String response = "";
         try {
-            response = sender.sendMessage("Register/CheckUsernameExists/" + username);
+            response = sender.sendMessage(message + username);
         } catch (IOException e) {
             e.printStackTrace();
         }
         while (!response.equals("success")) {
             try {
-                response = sender.sendMessage("Register/CheckUsernameExists/" + username);
+                response = sender.sendMessage(message + username);
                 username = utils.UserInputString("Username already exists. Please enter a username: ");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
+        message = SERVICENAME + "addObject/";
         String password = utils.UserInputString("Please enter a password: ");
         try {
-            response = sender.sendMessage("Register/AddNewUser/" + username + "/" + password);
+            response = sender.sendMessage(message + username + "/" + password);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,9 +58,10 @@ public class ClientUserMgr {
 
         String password = utils.UserInputString("password: ");
         String response = "";
+        String message = SERVICENAME + "Login/";
         int attempts = 3;
         try {
-            response = sender.sendMessage("Login/" + username+ "/" + password);
+            response = sender.sendMessage(message + username+ "/" + password);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -67,7 +70,7 @@ public class ClientUserMgr {
             password = utils.nextLine();
             attempts-=1;
             try {
-                response = sender.sendMessage("Login/" + username+ "/" + password);
+                response = sender.sendMessage(message + username+ "/" + password);
             } catch (IOException e) {
                 e.printStackTrace();
             }

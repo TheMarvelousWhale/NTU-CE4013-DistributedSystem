@@ -16,7 +16,7 @@ public class FacilityMgr {
 
         //create facil
         Facility[] FacilityArray = new Facility[] {
-                                     new Facility("pornhub",0),
+                                     new Facility("cornhub",0),
                                      new Facility("swimming-pool",1),
                                      new Facility("library",2),
                                 };

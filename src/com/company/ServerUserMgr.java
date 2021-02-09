@@ -7,12 +7,12 @@ import java.util.HashMap;
  * And create user objects when requested
  */
 
-public class ServerUserMgr {
+public class ServerUserMgr implements ServiceMgr{
     private static ServerUserMgr single_instance = null;
     public HashMap<String, User> UserRecords;
 
     private ServerUserMgr(){
-        this.UserRecords = new HashMap<String, User>();
+        this.UserRecords = new HashMap<>();
     }
 
     public static ServerUserMgr getInstance() {
@@ -36,17 +36,79 @@ public class ServerUserMgr {
         sender.sendMessage("success");
     }
 
-    public void login(String username, String password, UDPServer sender){
+    public boolean login(String username, String password){
         if (this.UserRecords.containsKey(username)){
             if (this.UserRecords.get(username).password.equals(password)){
-                sender.sendMessage("success");
+                return true;
             }
             else{
-                sender.sendMessage("fail");
+                return false;
             }
         }
         else{
-            sender.sendMessage("fail");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean addObject(String username, Object newUser) {
+        if (this.UserRecords.containsKey(username))
+            return false;
+        this.UserRecords.put(username, (User) newUser);
+        return true;
+    }
+
+    @Override
+    public boolean checkObject(String username) {
+        return !this.UserRecords.containsKey(username);
+    }
+
+    @Override
+    public boolean updateObject(String key, String[] operation) {
+        if (!this.UserRecords.containsKey(key))
+            return false;
+
+        if (operation[3].equals("username")){
+            UserRecords.get(key).username = operation[4];
+        }
+        else{
+            UserRecords.get(key).password = operation[4];
+        }
+        return true;
+    }
+
+    @Override
+    public void handleRequest(String[] requestSequence, UDPServer sender) {
+        switch (requestSequence[1]){
+            case "addObject":  //  addObject/username/password
+                this.addObject(requestSequence[2], new User(requestSequence[2], requestSequence[3]));
+                sender.sendSuccessMessage();
+                break;
+
+            case "Login":  // Login/username/password
+                if (this.login(requestSequence[2], requestSequence[3]))
+                    sender.sendSuccessMessage();
+                else
+                    sender.sendFailureMessage();
+                break;
+
+            case "checkObject":   // checkObject/username
+                if (this.checkObject(requestSequence[2]))
+                    sender.sendSuccessMessage();
+                else
+                    sender.sendFailureMessage();
+                break;
+
+            case "updateObject":    //   updateObject/$username/$(username or password)/$newValue
+                if (this.updateObject(requestSequence[2], requestSequence))
+                    sender.sendSuccessMessage();
+                else
+                    sender.sendFailureMessage();
+                break;
+
+            default:
+                sender.sendFailureMessage();
+                break;
         }
     }
 }

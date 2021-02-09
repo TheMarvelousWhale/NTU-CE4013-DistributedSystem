@@ -7,7 +7,7 @@ public class Client {
         UDPClient UDP_Sender = new UDPClient("localhost", 9000);
         FacilityMgr Neki = FacilityMgr.getInstance();
         Utils utils = new TerminalUtils();
-        ClientUserMgr Viet = ClientUserMgr.getInstance();
+        ClientUserMgr clientUserMgr = ClientUserMgr.getInstance();
         String loggedInUser = null;
 
         while (loggedInUser == null) {
@@ -15,10 +15,10 @@ public class Client {
                     " \n2. Login", "Invalid option! \nPlease choose a valid option: ");
             switch (option) {
                 case 1:
-                    Viet.Register(utils, UDP_Sender);
+                    clientUserMgr.Register(utils, UDP_Sender);
                     break;
                 case 2:
-                    loggedInUser = Viet.Login(utils, UDP_Sender);
+                    loggedInUser = clientUserMgr.Login(utils, UDP_Sender);
                     break;
                 default:
                     break;

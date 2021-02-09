@@ -29,7 +29,6 @@ public class UDPClient {
         DatagramPacket rxPacket = new DatagramPacket(rx_buf,rx_buf.length);
         clientSocket.receive(rxPacket);
         String ack = new String(rxPacket.getData(),0,rxPacket.getLength());
-        System.out.println("Server replied: " + ack);
         //clientSocket.close();
         return ack;
     }

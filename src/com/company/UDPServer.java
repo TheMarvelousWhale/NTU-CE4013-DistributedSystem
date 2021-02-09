@@ -48,4 +48,26 @@ public class UDPServer {
         //serverSocket.close();
     }
 
+    public void sendSuccessMessage(){
+        String message = "success";
+        byte[] tx_buf = message.getBytes();
+        DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
+        try {
+            serverSocket.send(txPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendFailureMessage(){
+        String message = "fail";
+        byte[] tx_buf = message.getBytes();
+        DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
+        try {
+            serverSocket.send(txPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
