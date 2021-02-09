@@ -6,10 +6,12 @@ public class Server {
 
     public static void main(String[] args) throws Exception {
         UDPServer Neki = new UDPServer();  //initiate UDP Server
-        ServerUserMgr Viet = ServerUserMgr.getInstance();   //initiate UserMgr
+        ServerUserMgr userMgr = ServerUserMgr.getInstance();   //initiate UserMgr
         RequestHandler requestHandler = new RequestHandler();
+        ServerFacilityMgr facilityMgr = ServerFacilityMgr.getInstance();
 
-        requestHandler.registerService("UserService" , Viet);
+        requestHandler.registerService("UserService" , userMgr);
+        requestHandler.registerService("FacilityService", facilityMgr);
 
         String request = "";
         while (true) {

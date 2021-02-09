@@ -5,9 +5,10 @@ public class Client {
 
     public static void main(String[] args) throws Exception {
         UDPClient UDP_Sender = new UDPClient("localhost", 9000);
-        FacilityMgr Neki = FacilityMgr.getInstance();
         Utils utils = new TerminalUtils();
         ClientUserMgr clientUserMgr = ClientUserMgr.getInstance();
+        ClientFacilityMgr facilityMgr = ClientFacilityMgr.getInstance();
+
         String loggedInUser = null;
 
         while (loggedInUser == null) {
@@ -25,6 +26,12 @@ public class Client {
             }
         }
 
+        String[] facilities = facilityMgr.getFacilities(utils, UDP_Sender);
+        int num = 1;
+        for (String facility: facilities){
+            utils.println(num + ". " + facility);
+            num++;
+        }
 
     }
 }
