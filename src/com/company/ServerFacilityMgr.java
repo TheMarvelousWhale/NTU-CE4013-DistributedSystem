@@ -74,6 +74,9 @@ public class ServerFacilityMgr implements ServiceMgr{
                     sender.sendFailureMessage();
                 break;
 
+//            case "updateObject":
+
+
             default:
                 sender.sendFailureMessage();
                 break;

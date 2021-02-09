@@ -5,19 +5,20 @@ import java.io.IOException;
 public class ClientUserMgr {
     private static ClientUserMgr single_instance = null;
     private static final String SERVICENAME = "UserService/";
+    UDPClient sender;
 
-    private ClientUserMgr(){
-
+    private ClientUserMgr(UDPClient sender){
+        this.sender = sender;
     }
 
 
-    public static ClientUserMgr getInstance() {
+    public static ClientUserMgr getInstance(UDPClient sender) {
         if (single_instance == null)
-            single_instance = new ClientUserMgr();
+            single_instance = new ClientUserMgr(sender);
         return single_instance;
     }
 
-    public void Register(Utils utils, UDPClient sender){
+    public void Register(Utils utils){
         /**
          * Registers a new user into the UserRecords
          * Sends username to Server
@@ -32,8 +33,8 @@ public class ClientUserMgr {
         }
         while (!response.equals("success")) {
             try {
-                response = sender.sendMessage(message + username);
                 username = utils.UserInputString("Username already exists. Please enter a username: ");
+                response = sender.sendMessage(message + username);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -49,7 +50,7 @@ public class ClientUserMgr {
         utils.println("User account " + username + " has been successfully created.");
     }
 
-    public String Login(Utils utils, UDPClient sender){
+    public String Login(Utils utils){
         /**
          * Logs in the user.
          * Returns the Username string for making requests under this username
@@ -65,7 +66,7 @@ public class ClientUserMgr {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        while (!response.equals("success")){
+        while (!response.equals("success") & attempts>0){
             utils.println("The password entered is incorrect. \nAttempts left: " + attempts + "\npassword: ");
             password = utils.nextLine();
             attempts-=1;

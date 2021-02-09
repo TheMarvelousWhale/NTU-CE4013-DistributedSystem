@@ -9,7 +9,6 @@ public class TerminalUtils implements Utils {
     public static Scanner s = new Scanner(System.in);
 
     public String nextLine(){
-        s.nextLine();
         String sc = s.nextLine();
         return sc;
     }
