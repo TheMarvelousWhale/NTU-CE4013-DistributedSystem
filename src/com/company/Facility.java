@@ -116,7 +116,7 @@ public class Facility {
             this.Record.put(bookingID, new Booking(bookingID, date, Integer.parseInt(startTime),
                     Integer.parseInt(endTime),username));
 
-            queryAvailability();
+            returnString += queryAvailability();
             returnString += "Your booking is successful. Booking ID is "+bookingID;
 
             //set last Modified
@@ -128,14 +128,15 @@ public class Facility {
 
 
 
-    public void changeBooking(String bookingID,Utils utils) {
+    public String changeBooking(String bookingID, String offsetStr) {
         /**
-         * Change the booking given an ID hihi
+         * Change the booking given an ID
          */
-
+        String returnString = "";
+        int offset = Integer.parseInt(offsetStr);
         //verify there is such a booking
         if (!this.Record.containsKey(bookingID)) {
-            utils.println("No such booking here.");
+            returnString += "No such booking here.";
         }
         else {
             //get the details of the old Booking
@@ -152,15 +153,13 @@ public class Facility {
             boolean rebook = true;
 
             // can the booking be advanced/delayed ?
-            utils.println("Current booking is from "+oldStartTime+" to "+oldEndTime);
-            utils.println("Please input the offset for booking ID: "+bookingID);
-            int offset = utils.checkUserIntInput(-24,24);
+            returnString += "Current booking is from "+oldStartTime+" to "+oldEndTime + "\n";
 
             //check bound first, then check clash (because clash assume it is within bound of 7x24 array)
             if (oldStartTime+offset < 0 || oldEndTime+offset > 23)
-                utils.println("Such change cannot be made as it exceeds the day boundary...Return to Main Page");
+                returnString += "Such change cannot be made as it exceeds the day boundary...Return to Main Page";
             else if (this.checkForClash(oldDate,oldStartTime+offset,oldEndTime+offset)) {
-                utils.println("There is a clash with another booking");
+                returnString += "There is a clash with another booking";
             }
             else {
                 //try to create a new booking
@@ -180,13 +179,15 @@ public class Facility {
 
                 //set last Modified
                 updateLastModified();
-                utils.println("Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h");
+                returnString += "Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h \n";
             }
 
-            if (rebook)
-                this.setAvailability(oldDate,oldStartTime,oldEndTime);
-                utils.println("Your booking "+ bookingID+ " was not modified");
+            if (rebook) {
+                this.setAvailability(oldDate, oldStartTime, oldEndTime);
+                returnString += "Your booking " + bookingID + " was not modified\n";
+            }
         }
+        return returnString;
     }
 
 

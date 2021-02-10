@@ -63,6 +63,10 @@ public class ServerFacilityMgr implements ServiceMgr{
                 response = this.FacilityRecords.get(key).book(requestSequence[4], requestSequence[5], requestSequence[6],
                         requestSequence[7]);
                 break;
+
+            case "changeBooking":    // updateObject/facility/changeBooking/bookingID/offset
+                response = this.FacilityRecords.get(key).changeBooking(requestSequence[4], requestSequence[5]);
+                break;
         }
 
         return response;

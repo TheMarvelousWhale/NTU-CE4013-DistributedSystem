@@ -70,4 +70,21 @@ public class ClientFacilityMgr {
         }
         utils.println(response);
     }
+
+    public void changeBooking(Utils utils, String bookingID, String facility){
+        String message = SERVICENAME;
+        message += "updateObject/" + facility + "/changeBooking/" + bookingID + "/";
+        int offset = utils.checkUserIntInput(-24,24);
+        message += offset;
+        String response = "";
+
+        try {
+            response = this.sender.sendMessage(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        utils.println(response);
+    }
+
 }

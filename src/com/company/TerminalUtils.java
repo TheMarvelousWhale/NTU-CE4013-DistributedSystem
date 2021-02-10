@@ -60,9 +60,7 @@ public class TerminalUtils implements Utils {
     public String getBookingID(){
         String prompt = "Please enter your booking ID String: ";
         System.out.println(prompt);
-        s.nextLine();                      //clear stuff
-        String ans = s.nextLine();         //
-        return ans;
+        return s.nextLine();
     }
 
     public void println(String s) {

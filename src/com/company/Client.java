@@ -63,6 +63,9 @@ public class Client {
 
             choice = utils.UserInputOptions(1, facilityOptions.length, "Please select an option: ",
                     "Invalid choice, please try again: ");
+
+            String bookingID;
+
             switch (choice){
                 case 1:
                     facilityMgr.queryFacility(utils, selectedFacility);
@@ -71,6 +74,11 @@ public class Client {
                 case 2:
                     facilityMgr.bookFacility(utils, loggedInUser, selectedFacility);
                     break;
+
+                case 3:
+                    bookingID = utils.getBookingID();
+                    facilityMgr.changeBooking(utils, bookingID, selectedFacility);
+
                 default:
                     break;
             }
