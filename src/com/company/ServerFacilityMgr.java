@@ -56,8 +56,16 @@ public class ServerFacilityMgr implements ServiceMgr{
     }
 
     @Override
-    public boolean updateObject(String key, String[] operation) {
-        return false;
+    public String updateObject(String key, String[] requestSequence) {
+        String response = "fail";
+        switch (requestSequence[3]){
+            case "book":    // updateObject/$facility/book/  username/date_input/startTime/endTime
+                response = this.FacilityRecords.get(key).book(requestSequence[4], requestSequence[5], requestSequence[6],
+                        requestSequence[7]);
+                break;
+        }
+
+        return response;
     }
 
     @Override
@@ -67,7 +75,7 @@ public class ServerFacilityMgr implements ServiceMgr{
                 sender.sendMessage(this.getFacilities());
                 break;
 
-            case "checkObject":     // checkObject/&facility
+            case "checkObject":     // checkObject/$facility
                 if (checkObject(requestSequence[2]))
                     sender.sendSuccessMessage();
                 else
@@ -77,11 +85,13 @@ public class ServerFacilityMgr implements ServiceMgr{
             case "queryFacility":       //queryFacility/$facility
                 sender.sendMessage(this.FacilityRecords.get(requestSequence[2]).queryAvailability());
                 break;
-//            case "updateObject":
 
+            case "updateObject":        // for booking:  updateObject/$facility/book/username/date_input/startTime/endTime
+                sender.sendMessage(updateObject(requestSequence[2], requestSequence));
+                break;
 
             default:
-                sender.sendMessage("MEOW");
+                sender.sendMessage("meow");
                 break;
         }
     }

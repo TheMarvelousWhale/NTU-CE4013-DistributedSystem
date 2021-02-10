@@ -64,9 +64,9 @@ public class ServerUserMgr implements ServiceMgr{
     }
 
     @Override
-    public boolean updateObject(String key, String[] operation) {
+    public String updateObject(String key, String[] operation) {
         if (!this.UserRecords.containsKey(key))
-            return false;
+            return "failure";
 
         if (operation[3].equals("username")){
             UserRecords.get(key).username = operation[4];
@@ -74,7 +74,7 @@ public class ServerUserMgr implements ServiceMgr{
         else{
             UserRecords.get(key).password = operation[4];
         }
-        return true;
+        return "success";
     }
 
     @Override
@@ -100,10 +100,7 @@ public class ServerUserMgr implements ServiceMgr{
                 break;
 
             case "updateObject":    //   updateObject/$username/$(username or password)/$newValue
-                if (this.updateObject(requestSequence[2], requestSequence))
-                    sender.sendSuccessMessage();
-                else
-                    sender.sendFailureMessage();
+                sender.sendMessage(this.updateObject(requestSequence[2], requestSequence));
                 break;
 
             default:

@@ -57,8 +57,7 @@ public class Client {
 
             selectedFacility = facilities[choice-1];
 
-
-            for (String opt : facilityOptions) {
+            for (String opt : facilityOptions) {  // print facility options
                 utils.println(opt);
             }
 
@@ -69,6 +68,9 @@ public class Client {
                     facilityMgr.queryFacility(utils, selectedFacility);
                     break;
 
+                case 2:
+                    facilityMgr.bookFacility(utils, loggedInUser, selectedFacility);
+                    break;
                 default:
                     break;
             }

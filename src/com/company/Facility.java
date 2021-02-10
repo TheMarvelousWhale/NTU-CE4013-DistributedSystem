@@ -93,44 +93,37 @@ public class Facility {
         return  timeTable;
     }
 
-    public int book(String username, int bookingPoints, Utils utils){
+    public String book(String username, String date_input, String startTime, String endTime){
         /**
          * Front end to print the facility to the user
          * Returns the points used for booking the facility
          */
+        String returnString = "";
+        DayOfWeek date = DayOfWeek.of(Integer.parseInt(date_input));
 
-        utils.println("For the day (1: Monday, 2: Tuesday, 3: Wednesday, 4: Thursday, 5: Friday, 6: Saturday, 7: Sunday): ");
-        int date_input = utils.checkUserIntInput(1,7);
-        DayOfWeek date = DayOfWeek.of(date_input);
-        utils.println("For the start time: ");
-        int startTime = utils.checkUserIntInput(0,23);
-        utils.println("For the end time: ");
-        int endTime = utils.checkUserIntInput(0,23);
+        int pointsRequired = Integer.parseInt(endTime) - Integer.parseInt(startTime) + 1;
 
-        int pointsRequired = endTime - startTime + 1;
-
-        if (this.checkForClash(date,startTime,endTime)) {
-            utils.println("There is a clash with another booking");
+        if (this.checkForClash(date,Integer.parseInt(startTime),Integer.parseInt(endTime))) {
+            returnString += "There is a clash with another booking";
         }
-        else if (bookingPoints < pointsRequired){
-            utils.println("User " + username + " does not have enough booking points.\n" + "Available points: "
-                    + bookingPoints + "    Points Required: " + pointsRequired);
-        }
+//        else if (bookingPoints < pointsRequired){
+//            utils.println("User " + username + " does not have enough booking points.\n" + "Available points: "
+//                    + bookingPoints + "    Points Required: " + pointsRequired);
+//        }
         else {
-            this.setAvailability(date, startTime, endTime);
+            this.setAvailability(date, Integer.parseInt(startTime), Integer.parseInt(endTime));
             String bookingID = UUID.randomUUID().toString();
-            this.Record.put(bookingID, new Booking(bookingID, date, startTime, endTime,username));
+            this.Record.put(bookingID, new Booking(bookingID, date, Integer.parseInt(startTime),
+                    Integer.parseInt(endTime),username));
 
             queryAvailability();
-            utils.println("Your booking is successful. Booking ID is "+bookingID + "\nPoints Remaining: "
-                    + (bookingPoints - pointsRequired));
+            returnString += "Your booking is successful. Booking ID is "+bookingID;
+
             //set last Modified
             updateLastModified();
-
-            return pointsRequired;
         }
 
-        return 0;
+        return returnString;
     }
 
 
@@ -141,7 +134,7 @@ public class Facility {
          */
 
         //verify there is such a booking
-        if (this.Record.containsKey(bookingID) == false) {
+        if (!this.Record.containsKey(bookingID)) {
             utils.println("No such booking here.");
         }
         else {

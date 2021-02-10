@@ -41,4 +41,33 @@ public class ClientFacilityMgr {
         }
         utils.println(response);
     }
+
+    public void bookFacility(Utils utils, String username, String facility){
+        String message = SERVICENAME;
+        message += "updateObject/";
+        message += facility + "/book/" + username + "/";
+        //updateObject/$facility/book/username/date_input/startTime/endTime
+
+        utils.println("For the day (1: Monday, 2: Tuesday, 3: Wednesday, 4: Thursday, 5: Friday, 6: Saturday, 7: Sunday): ");
+        int date_input = utils.checkUserIntInput(1,7);
+        message += date_input + "/";
+
+        utils.println("For the start time: ");
+        int startTime = utils.checkUserIntInput(0,23);
+        message += startTime + "/";
+
+        utils.println("For the end time: ");
+        int endTime = utils.checkUserIntInput(0,23);
+        message += endTime;
+
+
+        String response = "";
+
+        try {
+            response = this.sender.sendMessage(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        utils.println(response);
+    }
 }
