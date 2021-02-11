@@ -104,12 +104,14 @@ public class Facility {
         else {
             this.setAvailability(date, Integer.parseInt(startTime), Integer.parseInt(endTime));
             String bookingID = UUID.randomUUID().toString();
-            this.Record.put(bookingID, new Booking(bookingID, date, Integer.parseInt(startTime),
-                    Integer.parseInt(endTime),username));
+            Booking newBooking = new Booking(bookingID, date, Integer.parseInt(startTime), Integer.parseInt(endTime), username);
+            this.Record.put(bookingID, newBooking);
 
             returnString += queryAvailability();
             returnString += "Your booking is successful. Booking ID is "+bookingID;
-            this.notifyUsers(sender);
+            String notification = "A user has booked " + this.name + " facility for the time slot: " + newBooking.date +
+                   " " + newBooking.startTime+"h - " + newBooking.endTime + "h \n" ;
+            this.notifyUsers(sender, notification);
         }
 
         return returnString;
@@ -167,7 +169,10 @@ public class Facility {
                 rebook = false;
 
                 returnString += "Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h \n";
-                this.notifyUsers(sender);
+                String notification = "A user has changed his/her booking on "+ b.date +
+                        " from: " + oldStartTime + "h - " + oldEndTime + "h" +
+                        " to: " + b.startTime + "h - " + b.endTime + "h \n";
+                this.notifyUsers(sender, notification);
             }
 
             if (rebook) {
@@ -222,13 +227,15 @@ public class Facility {
         return 0;
     }
 
-    public void extendBooking(String bookingID, Utils utils) {
+    public String extendBooking(String bookingID, String offsetStr) {
         /**
          * Allows user to extend his current booking given a valid booking ID
          */
+        String returnString = "";
+        int offset = Integer.parseInt(offsetStr);
         // verify there is such a booking
-        if (this.Record.containsKey(bookingID) == false){
-            utils.println("No such booking here.");
+        if (!this.Record.containsKey(bookingID)){
+            return "No such booking here.\n";
         } else {
             //get the details of the old Booking
             Booking b = this.Record.get(bookingID);
@@ -242,31 +249,28 @@ public class Facility {
             //set to false if new booking successful, else rebook old booking
             boolean rebook = true;
 
-            //Allow up to 3hrs of extension at once
-            utils.println("How many slots do you want to extend your booking by (only up to 3hrs)?");
-            int offset = utils.checkUserIntInput(1,3);
-
             //Ensures that it does not go to the next day
             if (EndTime+offset > 23) {
-                utils.println("Such change cannot be made as it exceeds the day boundary...Return to Main Page");
+            returnString = "Such change cannot be made as it exceeds the day boundary.";
             }
             //Ensures that it does not clash with existing bookings
             else if (this.checkForClash(Date,StartTime,EndTime+offset)) {
-                utils.println("There is a clash with another booking");
+                returnString = "There is a clash with another booking";
             }
             //No clash, update the Availability, Record & lastModified. Show user booking is updated
             else {
                 this.setAvailability(Date, StartTime, EndTime+offset);
                 b.endTime = EndTime+offset;
                 rebook = false;
-                utils.println("Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+                returnString = "Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h\n";
             }
             //If new booking fails, rebook the original timeslot. Show user booking is same.
             if (rebook){
                 this.setAvailability(Date, StartTime, EndTime);
-                utils.println("No changes made to your booking on " + b.date + ", Timeslot: " + b.startTime + "h - " + b.endTime + "h");
+                returnString += "\nNo changes made to your booking on " + b.date + ", Timeslot: " + b.startTime + "h - " + b.endTime + "h\n";
             }
         }
+        return returnString;
     }
 
     public void registerUser(String username, String address, String port){
@@ -277,14 +281,14 @@ public class Facility {
         this.registeredUsers.remove(username);
     }
 
-    private void notifyUsers(UDPServer sender){
+    private void notifyUsers(UDPServer sender, String notification){
         Iterator hmIterator = this.registeredUsers.entrySet().iterator();
         while (hmIterator.hasNext()) {
             Map.Entry mapElement = (Map.Entry)hmIterator.next();
             String value = (String) mapElement.getValue();
             String[] addressAndPort = value.split("/", -1);
             try {
-                sender.sendNotifaction(addressAndPort[0], addressAndPort[1], "NOTIFICATION");
+                sender.sendNotifaction(addressAndPort[0], addressAndPort[1], notification);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }

@@ -65,7 +65,7 @@ public class Client {
                     "Invalid choice, please try again: ");
 
             String bookingID;
-
+            int extensionTime = 0;
             switch (choice){
                 case 1:
                     facilityMgr.queryFacility(utils, selectedFacility);
@@ -78,12 +78,20 @@ public class Client {
                 case 3:
                     bookingID = utils.getBookingID();
                     facilityMgr.changeBooking(utils, bookingID, selectedFacility);
-
+                    break;
                 case 4:
                     facilityMgr.monitorFacility(selectedFacility, loggedInUser, utils);
-
-                case 5:
+                    break;
+                case 5:     // Non-idempotent function
                     facilityMgr.getUserBookings(selectedFacility, loggedInUser, utils);
+                    break;
+                case 6:     // Idempotent function
+                    //LAST FUNCTION TO IMPLEMENT EXTEND BOOKING
+                    bookingID = utils.getBookingID();
+                    utils.println("How many slots do you want to extend your booking by (only up to 3hrs)?");
+                    extensionTime = utils.checkUserIntInput(1,3);
+                    facilityMgr.extendBooking(selectedFacility, bookingID, extensionTime, utils);
+                    break;
 
                 default:
                     break;

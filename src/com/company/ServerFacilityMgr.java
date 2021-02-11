@@ -108,6 +108,11 @@ public class ServerFacilityMgr implements ServiceMgr{
                 sender.sendMessage(this.FacilityRecords.get(requestSequence[2]).showRecords(requestSequence[3]));
                 break;
 
+            case "extendBooking":  //extendBooking/facility/bookingID/extenstionTime
+                sender.sendMessage(this.FacilityRecords.get(requestSequence[2]).extendBooking(requestSequence[3],
+                        requestSequence[4]));
+                break;
+
             default:
                 sender.sendMessage("meow");
                 break;

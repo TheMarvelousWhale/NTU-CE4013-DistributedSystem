@@ -125,4 +125,16 @@ public class ClientFacilityMgr {
         utils.println(response);
     }
 
+    public void extendBooking(String facility, String bookingID, int extensionTime, Utils utils){
+        //extendBooking/facility/bookingID/extenstionTime
+        String message = SERVICENAME + "extendBooking/" + facility + "/" + bookingID + "/" + extensionTime;
+        String response = "";
+        try {
+            response = this.comms.sendMessage(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        utils.println(response);
+    }
+
 }
