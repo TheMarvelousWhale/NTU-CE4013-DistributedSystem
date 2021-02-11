@@ -179,18 +179,22 @@ public class Facility {
     }
 
 
-    public void showRecords(String username,Utils utils) {
+    public String showRecords(String username) {
         /**
          * This show all the current booking ID of the user with their start and end time
          */
-        utils.println("For user: "+ username);
+        String returnString = "";
+        returnString = "For user: "+ username + "\n";
         for (String i :this.Record.keySet()) {
             Booking b = this.Record.get(i);
             if (b.username.equals(username))
-                utils.println("Booking ID:" + i + ", date: "+b.date.toString()+", from "+b.startTime+" to "+b.endTime);
+                returnString += "Booking ID: " + i + ", date: "+b.date.toString()
+                        +", from "+b.startTime+" to "+b.endTime + "\n";
             else
-                utils.println("Another user has booked this facility on date: "+b.date.toString()+", from "+b.startTime+" to "+b.endTime);
+                returnString += "Another user has booked this facility on date: "
+                        +b.date.toString()+", from "+b.startTime+" to "+b.endTime + "\n";
         }
+        return returnString;
     }
 
     public int cancelBooking(String bookingID, Utils utils) {

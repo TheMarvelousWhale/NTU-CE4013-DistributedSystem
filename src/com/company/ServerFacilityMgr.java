@@ -104,6 +104,10 @@ public class ServerFacilityMgr implements ServiceMgr{
                 sender.sendSuccessMessage();
                 break;
 
+            case "getBookings": //getBookings/facility/username
+                sender.sendMessage(this.FacilityRecords.get(requestSequence[2]).showRecords(requestSequence[3]));
+                break;
+
             default:
                 sender.sendMessage("meow");
                 break;

@@ -113,4 +113,16 @@ public class ClientFacilityMgr {
         utils.println("Monitoring has ended\n");
     }
 
+    public void getUserBookings(String facility, String username, Utils utils){
+        //getBookings/facility/username
+        String message = SERVICENAME + "getBookings/" + facility + "/" + username;
+        String response = "";
+        try {
+            response = this.comms.sendMessage(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        utils.println(response);
+    }
+
 }

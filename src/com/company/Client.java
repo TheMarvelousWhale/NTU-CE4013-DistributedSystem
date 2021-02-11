@@ -39,6 +39,7 @@ public class Client {
                 "\t3. Change a booking",
                 "\t4. Monitor this facility",
                 "\t5. Show current booking",
+                "\t6. Extend booking",
         };
 
         while(true){
@@ -80,6 +81,9 @@ public class Client {
 
                 case 4:
                     facilityMgr.monitorFacility(selectedFacility, loggedInUser, utils);
+
+                case 5:
+                    facilityMgr.getUserBookings(selectedFacility, loggedInUser, utils);
 
                 default:
                     break;
