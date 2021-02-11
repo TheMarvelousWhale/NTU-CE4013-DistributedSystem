@@ -6,11 +6,12 @@ public class ServerFacilityMgr implements ServiceMgr{
 
     private static ServerFacilityMgr single_instance = null;
     public HashMap<String, Facility> FacilityRecords;
+    UDPServer sender;
 
     //I will make this a singleton class
-    private ServerFacilityMgr(){
+    private ServerFacilityMgr(UDPServer sender){
         this.FacilityRecords = new HashMap<>();
-
+        this.sender = sender;
         //create facil
         Facility[] FacilityArray = new Facility[] {
                 new Facility("cornhub",0),
@@ -22,9 +23,9 @@ public class ServerFacilityMgr implements ServiceMgr{
             this.addObject(f.name,f);
     }
 
-    public static ServerFacilityMgr getInstance() {
+    public static ServerFacilityMgr getInstance(UDPServer sender) {
         if (single_instance == null)
-            single_instance = new ServerFacilityMgr();
+            single_instance = new ServerFacilityMgr(sender);
         return single_instance;
     }
 
@@ -61,11 +62,11 @@ public class ServerFacilityMgr implements ServiceMgr{
         switch (requestSequence[3]){
             case "book":    // updateObject/$facility/book/  username/date_input/startTime/endTime
                 response = this.FacilityRecords.get(key).book(requestSequence[4], requestSequence[5], requestSequence[6],
-                        requestSequence[7]);
+                        requestSequence[7], this.sender);
                 break;
 
             case "changeBooking":    // updateObject/facility/changeBooking/bookingID/offset
-                response = this.FacilityRecords.get(key).changeBooking(requestSequence[4], requestSequence[5]);
+                response = this.FacilityRecords.get(key).changeBooking(requestSequence[4], requestSequence[5], this.sender);
                 break;
         }
 
@@ -73,7 +74,7 @@ public class ServerFacilityMgr implements ServiceMgr{
     }
 
     @Override
-    public void handleRequest(String[] requestSequence, UDPServer sender) {
+    public void handleRequest(String[] requestSequence) {
         switch (requestSequence[1]){
             case "getFacilities":     // getFacilities
                 sender.sendMessage(this.getFacilities());
@@ -92,6 +93,15 @@ public class ServerFacilityMgr implements ServiceMgr{
 
             case "updateObject":        // for booking:  updateObject/$facility/book/username/date_input/startTime/endTime
                 sender.sendMessage(updateObject(requestSequence[2], requestSequence));
+                break;
+
+            case "monitor":     //monitor/register/facility/username/address/Port
+                if (requestSequence[2].equals("register"))
+                    this.FacilityRecords.get(requestSequence[3]).registerUser(requestSequence[4], requestSequence[5],
+                        requestSequence[6]);
+                else        //monitor/unregister/facility/username
+                    this.FacilityRecords.get(requestSequence[3]).unregisterUser(requestSequence[4]);
+                sender.sendSuccessMessage();
                 break;
 
             default:

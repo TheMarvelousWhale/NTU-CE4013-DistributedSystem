@@ -1,7 +1,10 @@
 package com.company;
 
+import java.net.UnknownHostException;
 import java.time.DayOfWeek;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -14,7 +17,7 @@ public class Facility {
     String name;
     HashMap<String, Booking> Record;
     int ID;
-    long lastModified;
+    HashMap<String, String> registeredUsers;  // stores username and "ipAddress/portNumber" of registered User
 
     public Facility(String name,int ID) {
         /**
@@ -26,10 +29,9 @@ public class Facility {
         this.name = name;
         this.ID =ID;                                         //until now i Still dont know what this is for
         this.availability = new int[7][24];
-        this.Record = new HashMap<String, Booking>();
-        this.lastModified = System.currentTimeMillis();
+        this.Record = new HashMap<>();
+        this.registeredUsers = new HashMap<>();
     }
-
 
 
     private boolean checkAvailability(int date, int time) {
@@ -53,11 +55,6 @@ public class Facility {
         }
     }
 
-    public long getLastModified() {
-        return this.lastModified;
-    }
-
-    private void updateLastModified() {this.lastModified = System.currentTimeMillis();}
 
     private boolean checkForClash(DayOfWeek date,int startTime, int endTime){
         for(int i= startTime; i<=endTime;i++) {
@@ -93,7 +90,7 @@ public class Facility {
         return  timeTable;
     }
 
-    public String book(String username, String date_input, String startTime, String endTime){
+    public String book(String username, String date_input, String startTime, String endTime, UDPServer sender){
         /**
          * Front end to print the facility to the user
          * Returns the points used for booking the facility
@@ -101,15 +98,9 @@ public class Facility {
         String returnString = "";
         DayOfWeek date = DayOfWeek.of(Integer.parseInt(date_input));
 
-        int pointsRequired = Integer.parseInt(endTime) - Integer.parseInt(startTime) + 1;
-
         if (this.checkForClash(date,Integer.parseInt(startTime),Integer.parseInt(endTime))) {
             returnString += "There is a clash with another booking";
         }
-//        else if (bookingPoints < pointsRequired){
-//            utils.println("User " + username + " does not have enough booking points.\n" + "Available points: "
-//                    + bookingPoints + "    Points Required: " + pointsRequired);
-//        }
         else {
             this.setAvailability(date, Integer.parseInt(startTime), Integer.parseInt(endTime));
             String bookingID = UUID.randomUUID().toString();
@@ -118,9 +109,7 @@ public class Facility {
 
             returnString += queryAvailability();
             returnString += "Your booking is successful. Booking ID is "+bookingID;
-
-            //set last Modified
-            updateLastModified();
+            this.notifyUsers(sender);
         }
 
         return returnString;
@@ -128,7 +117,7 @@ public class Facility {
 
 
 
-    public String changeBooking(String bookingID, String offsetStr) {
+    public String changeBooking(String bookingID, String offsetStr, UDPServer sender) {
         /**
          * Change the booking given an ID
          */
@@ -177,9 +166,8 @@ public class Facility {
                 //booking is successful
                 rebook = false;
 
-                //set last Modified
-                updateLastModified();
                 returnString += "Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h \n";
+                this.notifyUsers(sender);
             }
 
             if (rebook) {
@@ -225,7 +213,6 @@ public class Facility {
             //clear on the Availability & Record, booking ID will become invalid.
             this.clearAvailability(Date, StartTime, EndTime);
             this.Record.remove(bookingID);
-            updateLastModified();
             return EndTime - StartTime + 1;
         }
         return 0;
@@ -267,7 +254,6 @@ public class Facility {
             else {
                 this.setAvailability(Date, StartTime, EndTime+offset);
                 b.endTime = EndTime+offset;
-                updateLastModified();
                 rebook = false;
                 utils.println("Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h");
             }
@@ -278,4 +264,27 @@ public class Facility {
             }
         }
     }
+
+    public void registerUser(String username, String address, String port){
+        this.registeredUsers.put(username, (address + "/" + port));
+    }
+
+    public void unregisterUser(String username){
+        this.registeredUsers.remove(username);
+    }
+
+    private void notifyUsers(UDPServer sender){
+        Iterator hmIterator = this.registeredUsers.entrySet().iterator();
+        while (hmIterator.hasNext()) {
+            Map.Entry mapElement = (Map.Entry)hmIterator.next();
+            String value = (String) mapElement.getValue();
+            String[] addressAndPort = value.split("/", -1);
+            try {
+                sender.sendNotifaction(addressAndPort[0], addressAndPort[1], "NOTIFICATION");
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

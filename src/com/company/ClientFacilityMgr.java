@@ -5,16 +5,16 @@ import java.io.IOException;
 public class ClientFacilityMgr {
     private static ClientFacilityMgr single_instance = null;
     private static final String SERVICENAME = "FacilityService/";
-    UDPClient sender;
+    UDPClient comms;  // communication device that uses UDP
 
-    private ClientFacilityMgr(UDPClient sender){
-        this.sender = sender;
+    private ClientFacilityMgr(UDPClient comms){
+        this.comms = comms;
     }
 
 
-    public static ClientFacilityMgr getInstance(UDPClient sender) {
+    public static ClientFacilityMgr getInstance(UDPClient comms) {
         if (single_instance == null)
-            single_instance = new ClientFacilityMgr(sender);
+            single_instance = new ClientFacilityMgr(comms);
         return single_instance;
     }
 
@@ -23,7 +23,7 @@ public class ClientFacilityMgr {
         message += "getFacilities";
         String response = "";
         try {
-            response = this.sender.sendMessage(message);
+            response = this.comms.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,7 +35,7 @@ public class ClientFacilityMgr {
         message += "queryFacility/"+facility;
         String response = "";
         try {
-            response = this.sender.sendMessage(message);
+            response = this.comms.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,7 +64,7 @@ public class ClientFacilityMgr {
         String response = "";
 
         try {
-            response = this.sender.sendMessage(message);
+            response = this.comms.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,12 +79,38 @@ public class ClientFacilityMgr {
         String response = "";
 
         try {
-            response = this.sender.sendMessage(message);
+            response = this.comms.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         utils.println(response);
+    }
+
+    public void monitorFacility(String facility, String username, Utils utils) throws IOException {
+        //monitor/register/facility/username/address/Port
+
+        int duration = utils.UserInputOptions(1, 100,
+                "Enter the duration (in hours) to monitor from (1-100) inclusive",
+                "Please reenter the duration (1-100) inclusive: ");
+
+        String message = SERVICENAME + "monitor/register/" + facility + "/" + username + "/";   //register for notification
+        String localAddress = comms.getLocalAddress();
+        String localPort = comms.getLocalPort();
+        message += (localAddress + "/" + localPort);
+        utils.println("monitoring....");
+        this.comms.sendMessage(message);
+
+        try {
+            this.comms.monitorForNotification(duration, utils);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //monitor/unregister/facility/username
+        message = SERVICENAME + "monitor/unregister/" + facility + "/" + username;    //remove from notification list
+        this.comms.sendMessage(message);
+
+        utils.println("Monitoring has ended\n");
     }
 
 }

@@ -10,18 +10,20 @@ import java.util.HashMap;
 public class ServerUserMgr implements ServiceMgr{
     private static ServerUserMgr single_instance = null;
     public HashMap<String, User> UserRecords;
+    UDPServer sender;
 
-    private ServerUserMgr(){
+    private ServerUserMgr(UDPServer sender){
         this.UserRecords = new HashMap<>();
+        this.sender = sender;
     }
 
-    public static ServerUserMgr getInstance() {
+    public static ServerUserMgr getInstance(UDPServer sender) {
         if (single_instance == null)
-            single_instance = new ServerUserMgr();
+            single_instance = new ServerUserMgr(sender);
         return single_instance;
     }
 
-    public void checkUsername(String username, UDPServer sender){
+    public void checkUsername(String username){
         if (!this.UserRecords.containsKey(username)){
             sender.sendMessage("success");
         }
@@ -30,7 +32,7 @@ public class ServerUserMgr implements ServiceMgr{
         }
     }
 
-    public void addNewuser(String username, String password, UDPServer sender){
+    public void addNewuser(String username, String password){
         User newUser = new User(username, password);
         this.UserRecords.put(username, newUser);
         sender.sendMessage("success");
@@ -78,7 +80,7 @@ public class ServerUserMgr implements ServiceMgr{
     }
 
     @Override
-    public void handleRequest(String[] requestSequence, UDPServer sender) {
+    public void handleRequest(String[] requestSequence) {
         switch (requestSequence[1]){
             case "addObject":  //  addObject/username/password
                 this.addObject(requestSequence[2], new User(requestSequence[2], requestSequence[3]));

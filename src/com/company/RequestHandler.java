@@ -24,6 +24,6 @@ public class RequestHandler {
 
     public void handleRequest(String requestString, UDPServer sender){
         String[] requestSequence = requestString.split("/", -1);
-        registeredServices.get(requestSequence[0]).handleRequest(requestSequence, sender);
+        registeredServices.get(requestSequence[0]).handleRequest(requestSequence);
     }
 }
