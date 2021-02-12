@@ -18,7 +18,7 @@ public class UDPClient {
         this.clientSocket = new DatagramSocket(); //create an empty UDP socket
         this.IPAdress = InetAddress.getByName(hostname);
         this.localPort = clientSocket.getLocalPort();
-        this.localAddress = InetAddress.getByName("127.0.0.0");
+        this.localAddress = InetAddress.getLocalHost();
     }
 
     public String sendMessage(String message) throws IOException {

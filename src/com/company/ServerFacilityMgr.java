@@ -95,10 +95,10 @@ public class ServerFacilityMgr implements ServiceMgr{
                 sender.sendMessage(updateObject(requestSequence[2], requestSequence));
                 break;
 
-            case "monitor":     //monitor/register/facility/username/address/Port
+            case "monitor":     //monitor/register/facility/username/Port
                 if (requestSequence[2].equals("register"))
-                    this.FacilityRecords.get(requestSequence[3]).registerUser(requestSequence[4], requestSequence[5],
-                        requestSequence[6]);
+                    this.FacilityRecords.get(requestSequence[3]).registerUser(requestSequence[4], sender.getReturnAddress(),
+                        requestSequence[5]);
                 else        //monitor/unregister/facility/username
                     this.FacilityRecords.get(requestSequence[3]).unregisterUser(requestSequence[4]);
                 sender.sendSuccessMessage();

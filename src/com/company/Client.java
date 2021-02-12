@@ -13,6 +13,7 @@ public class Client {
         String loggedInUser = null;
 
 
+
         while (loggedInUser == null) {
             int option = utils.UserInputOptions(1, 2, "Welcome! Please select an option: \n1. Register" +
                     " \n2. Login", "Invalid option! \nPlease choose a valid option: ");

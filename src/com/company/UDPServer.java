@@ -15,6 +15,10 @@ public class UDPServer {
         this.serverSocket = new DatagramSocket(PORT);
     }
 
+    public InetAddress getReturnAddress(){
+        return returnAddress;
+    }
+
     public String receiveRequests(){
         /**
          * Receives requests from clients
@@ -78,5 +82,4 @@ public class UDPServer {
             e.printStackTrace();
         }
     }
-
 }

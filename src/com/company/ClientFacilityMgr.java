@@ -88,16 +88,15 @@ public class ClientFacilityMgr {
     }
 
     public void monitorFacility(String facility, String username, Utils utils) throws IOException {
-        //monitor/register/facility/username/address/Port
+        //monitor/register/facility/username/Port
 
         int duration = utils.UserInputOptions(1, 100,
                 "Enter the duration (in hours) to monitor from (1-100) inclusive",
                 "Please reenter the duration (1-100) inclusive: ");
 
         String message = SERVICENAME + "monitor/register/" + facility + "/" + username + "/";   //register for notification
-        String localAddress = comms.getLocalAddress();
         String localPort = comms.getLocalPort();
-        message += (localAddress + "/" + localPort);
+        message += localPort;
         utils.println("monitoring....");
         this.comms.sendMessage(message);
 

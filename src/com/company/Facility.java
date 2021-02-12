@@ -1,5 +1,6 @@
 package com.company;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.DayOfWeek;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class Facility {
     String name;
     HashMap<String, Booking> Record;
     int ID;
-    HashMap<String, String> registeredUsers;  // stores username and "ipAddress/portNumber" of registered User
+    HashMap<String, String[]> registeredUsers;  // stores username and "ipAddress/portNumber" of registered User
 
     public Facility(String name,int ID) {
         /**
@@ -273,8 +274,17 @@ public class Facility {
         return returnString;
     }
 
-    public void registerUser(String username, String address, String port){
-        this.registeredUsers.put(username, (address + "/" + port));
+    public void registerUser(String username, InetAddress address, String port){
+        String addressStr = address.toString();
+        int i = 0;
+        while (addressStr.charAt(i) == '/'){
+            i++;
+        }
+        addressStr = addressStr.substring(i);
+
+        String[] a = {addressStr, port};
+        System.out.println(a[0]);
+        this.registeredUsers.put(username, a);
     }
 
     public void unregisterUser(String username){
@@ -285,10 +295,10 @@ public class Facility {
         Iterator hmIterator = this.registeredUsers.entrySet().iterator();
         while (hmIterator.hasNext()) {
             Map.Entry mapElement = (Map.Entry)hmIterator.next();
-            String value = (String) mapElement.getValue();
-            String[] addressAndPort = value.split("/", -1);
+            String[] value = (String[]) mapElement.getValue();
             try {
-                sender.sendNotifaction(addressAndPort[0], addressAndPort[1], notification);
+                System.out.println(value[0]+ ":" + value[1]);
+                sender.sendNotifaction(value[0], value[1], notification);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
