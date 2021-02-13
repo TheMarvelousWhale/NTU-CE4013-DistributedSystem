@@ -26,27 +26,15 @@ public class ClientUserMgr {
         String message = SERVICENAME + "checkObject/";
         String username = utils.UserInputString("Please enter a username: ");
         String response = "";
-        try {
-            response = sender.sendMessage(message + username);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = sender.sendMessage(message + username);
         while (!response.equals("success")) {
-            try {
-                username = utils.UserInputString("Username already exists. Please enter a username: ");
-                response = sender.sendMessage(message + username);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            username = utils.UserInputString("Username already exists. Please enter a username: ");
+            response = sender.sendMessage(message + username);
         }
 
         message = SERVICENAME + "addObject/";
         String password = utils.UserInputString("Please enter a password: ");
-        try {
-            response = sender.sendMessage(message + username + "/" + password);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = sender.sendMessage(message + username + "/" + password);
         utils.println("User account " + username + " has been successfully created.");
     }
 
@@ -61,20 +49,12 @@ public class ClientUserMgr {
         String response = "";
         String message = SERVICENAME + "Login/";
         int attempts = 3;
-        try {
-            response = sender.sendMessage(message + username+ "/" + password);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = sender.sendMessage(message + username+ "/" + password);
         while (!response.equals("success") & attempts>0){
             utils.println("The password entered is incorrect. \nAttempts left: " + attempts + "\npassword: ");
             password = utils.nextLine();
             attempts-=1;
-            try {
-                response = sender.sendMessage(message + username+ "/" + password);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            response = sender.sendMessage(message + username+ "/" + password);
         }
 
         if (attempts > 0){

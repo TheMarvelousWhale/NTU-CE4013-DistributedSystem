@@ -22,11 +22,7 @@ public class ClientFacilityMgr {
         String message = SERVICENAME;
         message += "getFacilities";
         String response = "";
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
         return response.split("/", -1);
     }
 
@@ -34,11 +30,7 @@ public class ClientFacilityMgr {
         String message = SERVICENAME;
         message += "queryFacility/"+facility;
         String response = "";
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
         utils.println(response);
     }
 
@@ -63,11 +55,7 @@ public class ClientFacilityMgr {
 
         String response = "";
 
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
         utils.println(response);
     }
 
@@ -78,11 +66,7 @@ public class ClientFacilityMgr {
         message += offset;
         String response = "";
 
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
 
         utils.println(response);
     }
@@ -116,11 +100,7 @@ public class ClientFacilityMgr {
         //getBookings/facility/username
         String message = SERVICENAME + "getBookings/" + facility + "/" + username;
         String response = "";
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
         utils.println(response);
     }
 
@@ -128,11 +108,7 @@ public class ClientFacilityMgr {
         //extendBooking/facility/bookingID/extenstionTime
         String message = SERVICENAME + "extendBooking/" + facility + "/" + bookingID + "/" + extensionTime;
         String response = "";
-        try {
-            response = this.comms.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        response = this.comms.sendMessage(message);
         utils.println(response);
     }
 

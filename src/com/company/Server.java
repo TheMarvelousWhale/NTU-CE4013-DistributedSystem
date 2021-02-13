@@ -13,11 +13,15 @@ public class Server {
         requestHandler.registerService("UserService" , userMgr);
         requestHandler.registerService("FacilityService", facilityMgr);
 
-        String request = "";
+        String[] requestSequence;
+
         while (true) {
-            request = Neki.receiveRequests();
-            System.out.println(request);
-            requestHandler.handleRequest(request, Neki);
+            requestSequence = Neki.receiveRequests();
+            if (requestSequence == null){
+                System.out.println("Signal was lost, resending message.");
+                continue;
+            }
+            requestHandler.handleRequest(requestSequence);
         }
     }
 }

@@ -2,6 +2,7 @@ package com.company;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.HashMap;
 
 
 public class UDPServer {
@@ -10,16 +11,19 @@ public class UDPServer {
     public DatagramSocket serverSocket;
     public InetAddress returnAddress;
     public int returnPort;
+    public HashMap<String , String []> history;
+    public String requestID;
 
     public UDPServer() throws SocketException {
         this.serverSocket = new DatagramSocket(PORT);
+        this.history = new HashMap<>();
     }
 
     public InetAddress getReturnAddress(){
         return returnAddress;
     }
 
-    public String receiveRequests(){
+    public String[] receiveRequests(){
         /**
          * Receives requests from clients
          * And updates the returnAddress to the previously received packet
@@ -31,13 +35,31 @@ public class UDPServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        String sentence = new String(rxPacket.getData(), 0, rxPacket.getLength());
+        String requestString = new String(rxPacket.getData(), 0, rxPacket.getLength());
+        System.out.println(requestString);
+        String[] requestSequence = requestString.split("/", -1);
 
         this.returnAddress = rxPacket.getAddress();
         this.returnPort = rxPacket.getPort();
-//        System.out.println("Received "+sentence + " from " + this.returnAddress + ":" + this.returnPort);
-        return sentence;
+
+        String key = this.returnAddress.toString() + "/" +  this.returnPort;
+        String requestID = requestSequence[requestSequence.length - 1];
+        if (this.history.containsKey(key)){
+            // we sent to this client before
+            if (this.history.get(key)[1].equals(requestID)){
+                //  the package was sent before, resend the same message
+                this.resendPacket(this.history.get(key)[0], this.history.get(key)[1]);
+                return null;
+            }
+        }
+        else{
+            this.history.put(key, new String[]{"", ""});
+            this.requestID = requestID;
+        }
+
+        return requestSequence;
     }
+
 
     public void sendMessage(String message){
         byte[] tx_buf = message.getBytes();
@@ -47,8 +69,9 @@ public class UDPServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //serverSocket.close();
+        this.updateHistory(message, this.requestID);   // update the history
     }
+
 
     public void sendSuccessMessage(){
         String message = "success";
@@ -61,6 +84,7 @@ public class UDPServer {
         }
     }
 
+
     public void sendFailureMessage(){
         String message = "fail";
         byte[] tx_buf = message.getBytes();
@@ -71,6 +95,29 @@ public class UDPServer {
             e.printStackTrace();
         }
     }
+
+
+    public void updateHistory(String replyMessage, String requestID){
+        this.history.replace(this.returnAddress.toString() + "/" + this.returnPort, new String[]{replyMessage, requestID});
+    }
+
+    private void resendPacket(String addressAndPort, String message){
+        String[] addressAndPortArr = addressAndPort.split("/", 1);
+        byte[] tx_buf = message.getBytes();
+        DatagramPacket txPacket = null;
+        try {
+            txPacket = new DatagramPacket(tx_buf, tx_buf.length, InetAddress.getByName(addressAndPortArr[0])
+                    , Integer.parseInt(addressAndPortArr[1]));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        try {
+            serverSocket.send(txPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void sendNotifaction(String address, String port, String message) throws UnknownHostException {
         byte[] tx_buf = message.getBytes();

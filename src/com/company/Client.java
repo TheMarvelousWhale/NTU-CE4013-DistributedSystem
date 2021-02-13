@@ -12,7 +12,24 @@ public class Client {
 
         String loggedInUser = null;
 
+        int mode = utils.UserInputOptions(1, 3, "Select a mode: \n1. Send packet normally \n" +
+                "2. Packet loss at client side \n3. Packet loss at server side",
+                "Invalid option! \nPlease choose a valid option: ");
 
+        switch (mode){
+            case 1:
+                UDP_Sender.setMode("normal");
+                break;
+            case 2:
+                UDP_Sender.setMode("client signal loss");
+                break;
+            case 3:
+                UDP_Sender.setMode("server signal loss");   // havent figure this out yet
+                break;
+            default:
+                break;
+
+        }
 
         while (loggedInUser == null) {
             int option = utils.UserInputOptions(1, 2, "Welcome! Please select an option: \n1. Register" +

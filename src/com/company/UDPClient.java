@@ -11,6 +11,8 @@ public class UDPClient {
     InetAddress IPAdress;
     InetAddress localAddress;
     int localPort;
+    String mode = "normal";
+    int requestID = 0;
 
     public UDPClient(String hostname, int serverPort) throws SocketException, UnknownHostException {
         this.hostname = hostname;
@@ -21,27 +23,45 @@ public class UDPClient {
         this.localAddress = InetAddress.getLocalHost();
     }
 
-    public String sendMessage(String message) throws IOException {
-        // Send the message
-//        clientSocket.setSoTimeout(2000);
-        byte[] tx_buf;
+    public String sendMessage(String message) {
+        int targetPort = this.serverPort;
+        message += ("/" + this.requestID);   // append request ID to the end of the message
+        this.requestID += 1;   // increase request ID
+
+        if (this.mode.equals("client signal loss")){
+            targetPort = 1222; // purposely send to wrong port to stimulate signal loss
+        }
+
+        try {
+            clientSocket.setSoTimeout(2000);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
         byte[] rx_buf = new byte[2048];
-        tx_buf = message.getBytes();
-        DatagramPacket txPacket = new DatagramPacket(tx_buf,tx_buf.length,IPAdress,this.serverPort);
-        this.clientSocket.send(txPacket);
-        //System.out.println("Sent " + message + " to server");
-        // Wait for ACK
+
+        sendPacket(targetPort, this.IPAdress, message);     // send message
+
+
         DatagramPacket rxPacket = new DatagramPacket(rx_buf,rx_buf.length);
+
         try {
             clientSocket.receive(rxPacket);
         }
         catch (SocketTimeoutException e){
-            System.out.println("Server not responding");
-            return null;
+            System.out.println("Server not responding, client side packet loss. \nResending request.");
+            targetPort = this.serverPort;   // reset the port to the correct port number
+            sendPacket(targetPort, this.IPAdress, message);   // resend packet
+            try {
+                clientSocket.receive(rxPacket);   // try to receive again
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         String ack = new String(rxPacket.getData(),0,rxPacket.getLength());
-        //clientSocket.close();
         return ack;
     }
 
@@ -75,6 +95,21 @@ public class UDPClient {
         String [] addresses = localAddress.split("/", -1);
         System.out.println(addresses[0]);
         return addresses[0];
+    }
+
+    private void sendPacket(int port, InetAddress address, String message){
+        byte[] tx_buf;
+        tx_buf = message.getBytes();
+        DatagramPacket txPacket = new DatagramPacket(tx_buf,tx_buf.length,address,port);
+        try {
+            this.clientSocket.send(txPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setMode(String mode){
+        this.mode = mode;
     }
 
 }
