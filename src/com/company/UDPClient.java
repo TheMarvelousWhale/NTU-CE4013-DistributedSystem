@@ -49,7 +49,7 @@ public class UDPClient {
             clientSocket.receive(rxPacket);
         }
         catch (SocketTimeoutException e){
-            System.out.println("Server not responding, client side packet loss. \nResending request.");
+            System.out.println("Server not responding, packet loss detected. \nResending request.");
             targetPort = this.serverPort;   // reset the port to the correct port number
             sendPacket(targetPort, this.IPAdress, message);   // resend packet
             try {
@@ -110,6 +110,10 @@ public class UDPClient {
 
     public void setMode(String mode){
         this.mode = mode;
+        if (this.mode.equals("server signal loss")){
+            this.sendMessage("set server packet loss");
+            System.out.println("Server side packet loss has been set.");
+        }
     }
 
 }

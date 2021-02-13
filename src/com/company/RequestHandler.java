@@ -21,6 +21,9 @@ public class RequestHandler {
     }
 
     public void handleRequest(String[] requestSequence){
-        registeredServices.get(requestSequence[0]).handleRequest(requestSequence);
+        if (registeredServices.containsKey(requestSequence[0])){
+            registeredServices.get(requestSequence[0]).handleRequest(requestSequence);
+        }
+
     }
 }

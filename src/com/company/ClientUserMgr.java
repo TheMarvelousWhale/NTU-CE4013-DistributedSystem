@@ -27,6 +27,9 @@ public class ClientUserMgr {
         String username = utils.UserInputString("Please enter a username: ");
         String response = "";
         response = sender.sendMessage(message + username);
+
+        System.out.println("Server response: " + response);
+
         while (!response.equals("success")) {
             username = utils.UserInputString("Username already exists. Please enter a username: ");
             response = sender.sendMessage(message + username);

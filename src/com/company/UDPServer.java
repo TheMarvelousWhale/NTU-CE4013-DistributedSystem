@@ -14,6 +14,8 @@ public class UDPServer {
     public HashMap<String , String []> history;
     public String requestID;
 
+    public boolean serverSidePacketLoss = false;
+
     public UDPServer() throws SocketException {
         this.serverSocket = new DatagramSocket(PORT);
         this.history = new HashMap<>();
@@ -36,6 +38,8 @@ public class UDPServer {
             e.printStackTrace();
         }
         String requestString = new String(rxPacket.getData(), 0, rxPacket.getLength());
+
+
         System.out.println(requestString);
         String[] requestSequence = requestString.split("/", -1);
 
@@ -43,18 +47,26 @@ public class UDPServer {
         this.returnPort = rxPacket.getPort();
 
         String key = this.returnAddress.toString() + "/" +  this.returnPort;
+
         String requestID = requestSequence[requestSequence.length - 1];
+        if (requestSequence[0].equals("set server packet loss"))    // set the server to lose packet
+            this.setPacketLoss(requestID);
+        this.requestID = requestID;
         if (this.history.containsKey(key)){
             // we sent to this client before
+            System.out.println("received from the same client");
+            System.out.println("previous request ID: " + this.history.get(key)[1]);
+            System.out.println("current request ID: " + requestID);
             if (this.history.get(key)[1].equals(requestID)){
                 //  the package was sent before, resend the same message
-                this.resendPacket(this.history.get(key)[0], this.history.get(key)[1]);
+                System.out.println("resending message: \n" + this.history.get(key)[0]);
+
+                this.resendPacket(key, this.history.get(key)[0]);
                 return null;
             }
         }
         else{
             this.history.put(key, new String[]{"", ""});
-            this.requestID = requestID;
         }
 
         return requestSequence;
@@ -65,7 +77,8 @@ public class UDPServer {
         byte[] tx_buf = message.getBytes();
         DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
         try {
-            serverSocket.send(txPacket);
+            if (!serverSidePacketLoss)      // if stimulating serverSide Packet loss, dont send packet
+                serverSocket.send(txPacket);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,25 +88,13 @@ public class UDPServer {
 
     public void sendSuccessMessage(){
         String message = "success";
-        byte[] tx_buf = message.getBytes();
-        DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
-        try {
-            serverSocket.send(txPacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.sendMessage(message);
     }
 
 
     public void sendFailureMessage(){
         String message = "fail";
-        byte[] tx_buf = message.getBytes();
-        DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
-        try {
-            serverSocket.send(txPacket);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.sendMessage(message);
     }
 
 
@@ -102,12 +103,13 @@ public class UDPServer {
     }
 
     private void resendPacket(String addressAndPort, String message){
-        String[] addressAndPortArr = addressAndPort.split("/", 1);
+        String[] addressAndPortArr = addressAndPort.split("/", -1);
         byte[] tx_buf = message.getBytes();
         DatagramPacket txPacket = null;
+        System.out.println(addressAndPortArr[1] + " : " + addressAndPortArr[2]);
         try {
-            txPacket = new DatagramPacket(tx_buf, tx_buf.length, InetAddress.getByName(addressAndPortArr[0])
-                    , Integer.parseInt(addressAndPortArr[1]));
+            txPacket = new DatagramPacket(tx_buf, tx_buf.length, InetAddress.getByName(addressAndPortArr[1])
+                    , Integer.parseInt(addressAndPortArr[2]));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -118,7 +120,6 @@ public class UDPServer {
         }
     }
 
-
     public void sendNotifaction(String address, String port, String message) throws UnknownHostException {
         byte[] tx_buf = message.getBytes();
         System.out.println(address + " " + port);
@@ -128,5 +129,18 @@ public class UDPServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setPacketLoss(String requestID){
+        this.serverSidePacketLoss = true;
+        String message = "success";
+        byte[] tx_buf = message.getBytes();
+        DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
+        try {
+            serverSocket.send(txPacket);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.updateHistory(message, requestID);
     }
 }
