@@ -43,24 +43,24 @@ public class TerminalUtils implements Utils {
                 p = prompt;
             else
                 p = reprompt;
+            tries++;
             System.out.println(p);
             i = s.nextInt();
+            s.nextLine();
         } while (i> stop || i < start);
         return i;
     }
 
     public String UserInputString(String prompt) {
         System.out.println(prompt);
-        String s = nextLine();
-        return s;
+        String str = TerminalUtils.s.nextLine();
+        return str;
     }
 
     public String getBookingID(){
         String prompt = "Please enter your booking ID String: ";
         System.out.println(prompt);
-        s.nextLine();                      //clear stuff
-        String ans = s.nextLine();         //
-        return ans;
+        return s.nextLine();
     }
 
     public void println(String s) {
