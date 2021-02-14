@@ -49,7 +49,8 @@ public class UDPClient {
             clientSocket.receive(rxPacket);
         }
         catch (SocketTimeoutException e){
-            System.out.println("Server not responding, packet loss detected. \nResending request.");
+//            System.out.println("Server not responding, packet loss detected. \nResending request.");
+            e.printStackTrace();
             targetPort = this.serverPort;   // reset the port to the correct port number
             sendPacket(targetPort, this.IPAdress, message);   // resend packet
             try {
@@ -62,6 +63,7 @@ public class UDPClient {
         }
 
         String ack = new String(rxPacket.getData(),0,rxPacket.getLength());
+//        System.out.println(ack);
         return ack;
     }
 

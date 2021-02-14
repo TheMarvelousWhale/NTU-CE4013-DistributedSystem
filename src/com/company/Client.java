@@ -12,6 +12,12 @@ public class Client {
 
         String loggedInUser = null;
 
+        int invocation = utils.UserInputOptions(1, 2, "Select an invocation semantics: \n" +
+                "1. at-least-once \n2. at-most-once", "Invalid option! \nPlease choose a valid option: ");
+
+        if (invocation == 1)
+            UDP_Sender.sendMessage("atLeastOnceInvocation");
+
         int mode = utils.UserInputOptions(1, 3, "Select a mode: \n1. Send packet normally \n" +
                 "2. Packet loss at client side \n3. Packet loss at server side",
                 "Invalid option! \nPlease choose a valid option: ");
@@ -24,7 +30,7 @@ public class Client {
                 UDP_Sender.setMode("client signal loss");
                 break;
             case 3:
-                UDP_Sender.setMode("server signal loss");   // havent figure this out yet
+                UDP_Sender.setMode("server signal loss");
                 break;
             default:
                 break;

@@ -13,6 +13,7 @@ public class UDPServer {
     public int returnPort;
     public HashMap<String , String []> history;
     public String requestID;
+    public boolean atMostOnceInvocation = true;
 
     public boolean serverSidePacketLoss = false;
 
@@ -39,35 +40,44 @@ public class UDPServer {
         }
         String requestString = new String(rxPacket.getData(), 0, rxPacket.getLength());
 
-
         System.out.println(requestString);
         String[] requestSequence = requestString.split("/", -1);
 
         this.returnAddress = rxPacket.getAddress();
         this.returnPort = rxPacket.getPort();
 
+        if (requestSequence[0].equals("atLeastOnceInvocation")) {
+            this.atMostOnceInvocation = false;
+            this.sendMessage("success");
+        }
+
         String key = this.returnAddress.toString() + "/" +  this.returnPort;
 
         String requestID = requestSequence[requestSequence.length - 1];
-        if (requestSequence[0].equals("set server packet loss"))    // set the server to lose packet
-            this.setPacketLoss(requestID);
         this.requestID = requestID;
+
         if (this.history.containsKey(key)){
             // we sent to this client before
             System.out.println("received from the same client");
             System.out.println("previous request ID: " + this.history.get(key)[1]);
             System.out.println("current request ID: " + requestID);
-            if (this.history.get(key)[1].equals(requestID)){
+            if (!atMostOnceInvocation){
+                this.history.remove(key);
+            }
+
+            if (atMostOnceInvocation && this.history.get(key)[1].equals(requestID)){
                 //  the package was sent before, resend the same message
                 System.out.println("resending message: \n" + this.history.get(key)[0]);
-
                 this.resendPacket(key, this.history.get(key)[0]);
                 return null;
             }
         }
-        else{
+        else
             this.history.put(key, new String[]{"", ""});
-        }
+
+
+        if (requestSequence[0].equals("set server packet loss"))    // set the server to lose packet
+            this.setPacketLoss(requestID);
 
         return requestSequence;
     }
@@ -77,8 +87,14 @@ public class UDPServer {
         byte[] tx_buf = message.getBytes();
         DatagramPacket txPacket = new DatagramPacket(tx_buf, tx_buf.length, this.returnAddress, this.returnPort);
         try {
-            if (!serverSidePacketLoss)      // if stimulating serverSide Packet loss, dont send packet
+            if (!serverSidePacketLoss) {
                 serverSocket.send(txPacket);
+            }
+            else{ // if stimulating serverSide Packet loss, dont send packet
+                if (!history.containsKey(this.returnAddress.toString() + "/" +  this.returnPort))
+                    serverSocket.send(txPacket);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -99,7 +115,9 @@ public class UDPServer {
 
 
     public void updateHistory(String replyMessage, String requestID){
-        this.history.replace(this.returnAddress.toString() + "/" + this.returnPort, new String[]{replyMessage, requestID});
+        if (atMostOnceInvocation)
+            this.history.replace(this.returnAddress.toString() + "/" + this.returnPort,
+                    new String[]{replyMessage, requestID});
     }
 
     private void resendPacket(String addressAndPort, String message){
@@ -143,4 +161,6 @@ public class UDPServer {
         }
         this.updateHistory(message, requestID);
     }
+
+
 }
