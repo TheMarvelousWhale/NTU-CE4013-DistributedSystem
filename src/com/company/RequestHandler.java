@@ -15,15 +15,15 @@ public class RequestHandler {
 
     /**
      * Registers new services
-     * @param serviceName
-     * @param newService
      */
     public void registerService(String serviceName, ServiceMgr newService){
         this.registeredServices.put(serviceName, newService);
     }
 
-    public void handleRequest(String requestString, UDPServer sender){
-        String[] requestSequence = requestString.split("/", -1);
-        registeredServices.get(requestSequence[0]).handleRequest(requestSequence);
+    public void handleRequest(String[] requestSequence){
+        if (registeredServices.containsKey(requestSequence[0])){
+            registeredServices.get(requestSequence[0]).handleRequest(requestSequence);
+        }
+
     }
 }
