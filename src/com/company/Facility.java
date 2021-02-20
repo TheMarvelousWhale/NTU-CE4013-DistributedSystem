@@ -29,7 +29,7 @@ public class Facility {
          */
         this.name = name;
         this.ID =ID;                                         //until now i Still dont know what this is for
-        this.availability = new int[7][24];
+        this.availability = new int[7][96];
         this.Record = new HashMap<>();
         this.registeredUsers = new HashMap<>();
     }
@@ -56,6 +56,12 @@ public class Facility {
         }
     }
 
+    private String makeReadable(int time){
+        if (time >= 10)
+            return String.valueOf(time);
+        else
+            return "0" + time;
+    }
 
     private boolean checkForClash(DayOfWeek date,int startTime, int endTime){
         for(int i= startTime; i<=endTime;i++) {
@@ -71,23 +77,25 @@ public class Facility {
          */
         String timeTable = "";
         char[] days = {'M', 'T', 'W', 'T', 'F', 'S', 'S'};
-        timeTable+="   |  0000|  0100|  0200|  0300|  0400|  0500|  0600|  0700|  0800|  0900|  1000| " +
-                " 1100|  1200|  1300|  1400|  1500|  1600|  1700|  1800|  1900|  2000|  2100|  2200|  2300|\n";
+        timeTable+="   |0000|0100|0200|0300|0400|0500|0600|0700|0800|0900|1000|" +
+                "1100|1200|1300|1400|1500|1600|1700|1800|1900|2000|2100|2200|2300|\n";
         timeTable+="--------------------------------------------------------------------------------------" +
-                "--------------------------------------------------------------------------------------\n";
-        for(int i = 0; i<7; i++){
-           timeTable += days[i] + "  | ";
-            for(int j = 0; j<24; j++){
+                "--------------------------------------\n";
+        for(int i = 0; i<this.availability.length; i++){
+           timeTable += days[i] + "  ";
+            for(int j = 0; j<this.availability[0].length; j++){
+                if (j%4 == 0)
+                    timeTable += "|";
                 if (checkAvailability(i, j)) {
-                    timeTable += "  O  | ";
+                    timeTable += " ";
                 }
-                else timeTable += "  X  | ";
+                else timeTable += "X";
             }
-            timeTable += "\n";
+            timeTable += "|\n";
         }
 
         timeTable += "\n";
-        timeTable += "O = Available \nX = Booked \n\n";
+        timeTable += "X = Booked \n\n";
         return  timeTable;
     }
 
@@ -98,20 +106,29 @@ public class Facility {
          */
         String returnString = "";
         DayOfWeek date = DayOfWeek.of(Integer.parseInt(date_input));
+        int start = Integer.parseInt(startTime);
+        int end = Integer.parseInt(endTime)-1;
 
-        if (this.checkForClash(date,Integer.parseInt(startTime),Integer.parseInt(endTime))) {
+        if (start > end)
+            return "Start is greater than end time. Invalid input.\n";
+
+        if (this.checkForClash(date,start,end)) {
             returnString += "There is a clash with another booking";
         }
         else {
-            this.setAvailability(date, Integer.parseInt(startTime), Integer.parseInt(endTime));
+            this.setAvailability(date, start, end);
             String bookingID = UUID.randomUUID().toString();
-            Booking newBooking = new Booking(bookingID, date, Integer.parseInt(startTime), Integer.parseInt(endTime), username);
+            Booking newBooking = new Booking(bookingID, date, start, end, username);
             this.Record.put(bookingID, newBooking);
 
             returnString += queryAvailability();
-            returnString += "Your booking is successful. Booking ID is "+bookingID;
+            returnString += "You have booked "  + newBooking.date +
+                    " " + newBooking.getStartTime() + " - "
+                    + newBooking.getEndTime() + ". Booking ID is "+bookingID;
+
             String notification = "A user has booked " + this.name + " facility for the time slot: " + newBooking.date +
-                   " " + newBooking.startTime+"h - " + newBooking.endTime + "h \n" ;
+                   " " + newBooking.getStartTime() + " - "
+                    + newBooking.getEndTime() + "\n" ;
             this.notifyUsers(sender, notification);
         }
 
@@ -144,12 +161,9 @@ public class Facility {
             //default to true -- so if new booking is feasible, set it to false
             boolean rebook = true;
 
-            // can the booking be advanced/delayed ?
-            returnString += "Current booking is from "+oldStartTime+" to "+oldEndTime + "\n";
-
             //check bound first, then check clash (because clash assume it is within bound of 7x24 array)
-            if (oldStartTime+offset < 0 || oldEndTime+offset > 23)
-                returnString += "Such change cannot be made as it exceeds the day boundary...Return to Main Page";
+            if (oldStartTime+offset < 0 || oldEndTime+offset > this.availability[0].length)
+                returnString += "Such change cannot be made. The changes must stay within the same day.";
             else if (this.checkForClash(oldDate,oldStartTime+offset,oldEndTime+offset)) {
                 returnString += "There is a clash with another booking";
             }
@@ -168,11 +182,19 @@ public class Facility {
 
                 //booking is successful
                 rebook = false;
+                oldEndTime += 1;
 
-                returnString += "Your booking on " + b.date + " has been changed to: " + b.startTime + "h - " + b.endTime + "h \n";
+                returnString += "Your booking on " + b.date + " has been changed" +
+                        "\n from: " + makeReadable(oldStartTime/4) + makeReadable((oldStartTime%4)*15) + "h - "
+                        + makeReadable(oldEndTime/4) + makeReadable((oldEndTime%4)*15) + "h" +
+                        "\n to: " + b.getStartTime() + " - " +
+                        b.getEndTime() + "\n";
+
                 String notification = "A user has changed his/her booking on "+ b.date +
-                        " from: " + oldStartTime + "h - " + oldEndTime + "h" +
-                        " to: " + b.startTime + "h - " + b.endTime + "h \n";
+                        "\n from: " + makeReadable(oldStartTime/4) + makeReadable((oldStartTime%4)*15) + "h - "
+                        + makeReadable(oldEndTime/4) + makeReadable((oldEndTime%4)*15) + "h" +
+                        "\n to: " + b.getStartTime() + " - " +
+                        b.getEndTime() + "\n";
                 this.notifyUsers(sender, notification);
             }
 
@@ -203,30 +225,6 @@ public class Facility {
         return returnString;
     }
 
-    public int cancelBooking(String bookingID, Utils utils) {
-        /**
-         * Allows user to cancel booking given a valid booking ID
-         */
-        //verify there is such a booking
-        if (!this.Record.containsKey(bookingID)) {
-            utils.println("No such booking here.");
-        } else {
-            //get the details of the old Booking
-            Booking b = this.Record.get(bookingID);
-            DayOfWeek Date = b.date;
-            int StartTime = b.startTime;
-            int EndTime = b.endTime;
-
-            //print details of old booking
-            utils.println("Your booking on: " + b.date + ", from " + b.startTime + "h to " + b.endTime + "h, will be cancelled.");
-
-            //clear on the Availability & Record, booking ID will become invalid.
-            this.clearAvailability(Date, StartTime, EndTime);
-            this.Record.remove(bookingID);
-            return EndTime - StartTime + 1;
-        }
-        return 0;
-    }
 
     public String extendBooking(String bookingID, String offsetStr) {
         /**
@@ -251,7 +249,7 @@ public class Facility {
             boolean rebook = true;
 
             //Ensures that it does not go to the next day
-            if (EndTime+offset > 23) {
+            if (EndTime+offset > this.availability[0].length) {
             returnString = "Such change cannot be made as it exceeds the day boundary.";
             }
             //Ensures that it does not clash with existing bookings
@@ -263,12 +261,16 @@ public class Facility {
                 this.setAvailability(Date, StartTime, EndTime+offset);
                 b.endTime = EndTime+offset;
                 rebook = false;
-                returnString = "Your booking on " + b.date + " has been extended. " + "Timeslot: " + b.startTime + "h - " + b.endTime + "h\n";
+                returnString = "Your booking on " + b.date + " has been extended. " + "Timeslot: " +
+                        b.getStartTime() + " - " +
+                        b.getEndTime() + "\n";
             }
             //If new booking fails, rebook the original timeslot. Show user booking is same.
             if (rebook){
                 this.setAvailability(Date, StartTime, EndTime);
-                returnString += "\nNo changes made to your booking on " + b.date + ", Timeslot: " + b.startTime + "h - " + b.endTime + "h\n";
+                returnString += "\nNo changes made to your booking on " + b.date + ", Timeslot: "+
+                        b.getStartTime() + " - " +
+                        b.getEndTime() + "\n";
             }
         }
         return returnString;

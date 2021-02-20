@@ -44,12 +44,18 @@ public class ClientFacilityMgr {
         int date_input = utils.checkUserIntInput(1,7);
         message += date_input + "/";
 
-        utils.println("For the start time: ");
+        utils.println("For the start time. \nEnter the start hour:");
         int startTime = utils.checkUserIntInput(0,23);
+        startTime *= 4;
+        utils.println("Enter the start minute ( 0 -> 0 min, 1 -> 15 min, 2 -> 30 min, 3 -> 45 min");
+        startTime += utils.checkUserIntInput(0, 3);
         message += startTime + "/";
 
-        utils.println("For the end time: ");
+        utils.println("For the end time: \nEnter the end hour:");
         int endTime = utils.checkUserIntInput(0,23);
+        endTime *= 4;
+        utils.println("Enter the end minute ( 0 -> 0 min, 1 -> 15 min, 2 -> 30 min, 3 -> 45 min");
+        endTime += utils.checkUserIntInput(0, 3);
         message += endTime;
 
 
@@ -75,7 +81,7 @@ public class ClientFacilityMgr {
         //monitor/register/facility/username/Port
 
         int duration = utils.UserInputOptions(1, 100,
-                "Enter the duration (in hours) to monitor from (1-100) inclusive",
+                "Enter the duration (in seconds) to monitor from (1-100) inclusive",
                 "Please reenter the duration (1-100) inclusive: ");
 
         String message = SERVICENAME + "monitor/register/" + facility + "/" + username + "/";   //register for notification

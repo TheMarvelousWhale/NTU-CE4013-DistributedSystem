@@ -113,7 +113,7 @@ public class Client {
                     //LAST FUNCTION TO IMPLEMENT EXTEND BOOKING
                     bookingID = utils.getBookingID();
                     utils.println("How many slots do you want to extend your booking by (only up to 3hrs)?");
-                    extensionTime = utils.checkUserIntInput(1,3);
+                    extensionTime = utils.checkUserIntInput(1,12);
                     facilityMgr.extendBooking(selectedFacility, bookingID, extensionTime, utils);
                     break;
 
